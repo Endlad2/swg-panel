@@ -86,7 +86,7 @@ NODE_NET=host
 TURN_MANAGE=panel
 TLS_VERIFY=no
 """
-EXTRA = """SWG_LATEST_URL=https://raw.githubusercontent.com/SanityProtocol/swg-panel/dev/VERSION
+EXTRA = """SWG_LATEST_URL=https://raw.githubusercontent.com/Endlad2/swg-panel/dev/VERSION
 SWG_TURN_MIRROR=https://mirror.example/turn   # my mirror
 PULL_POLICY=always
 MY_OWN_KNOB=42

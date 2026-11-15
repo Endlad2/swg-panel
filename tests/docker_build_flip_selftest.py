@@ -2,19 +2,19 @@
 """Self-test: after `install-docker.sh --build`, the image the box BUILDS is the image it RUNS.
 
 `--build` exists for one reason: running code GHCR does not publish. CI builds
-`ghcr.io/sanityprotocol/swg-{panel,node}:latest` on push to `main` and nowhere else, so a branch has no
+`ghcr.io/endlad2/swg-{panel,node}:latest` on push to `main` and nowhere else, so a branch has no
 image and `--build` is the only way a docker box can run one.
 
 ⚠️ THE FLIP MUST LEAVE `image:` ALONE, AND THAT IS NOT AN OVERSIGHT — IT IS THE CONTRACT.
 Compose names a built image with the service's `image:` value. Comment it out and the build is named
 `<project>-swg-node` instead. That matters because ONE consumer outside compose reads that name:
 `swg-noded` runs every turn-proxy container from `SWG_TURN_IMAGE`, which the node service resolves to
-`ghcr.io/sanityprotocol/swg-node:${SWG_IMAGE_TAG:-latest}`. Break the naming and SWG_TURN_IMAGE points at an
+`ghcr.io/endlad2/swg-node:${SWG_IMAGE_TAG:-latest}`. Break the naming and SWG_TURN_IMAGE points at an
 image this box never built — docker pulls MAIN's published image to run the proxies, or fails with no
 network. That is the "reverted to published code" failure --build exists to prevent, moved one layer down.
 
 MEASURED on docker 29.7.2 / compose v5.2.0, `docker compose build` on the two shapes:
-    image: + build:  ->  ghcr.io/sanityprotocol/swg-node:latest   (SWG_TURN_IMAGE resolves to this)
+    image: + build:  ->  ghcr.io/endlad2/swg-node:latest   (SWG_TURN_IMAGE resolves to this)
     build: only      ->  cmpxb-swg-node:latest                    (SWG_TURN_IMAGE resolves to nothing local)
 
 The hazard that once motivated commenting `image:` out — a stray `docker compose pull` replacing a local

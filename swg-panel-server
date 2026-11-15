@@ -1010,7 +1010,7 @@ def _ver_behind(have, ref):
 # Cached by the file's inode, mtime and size (every writer replaces it by rename), so the 5 s poll costs one stat; a
 # failed read is not cached.
 UPDATE_WRAPPER = os.environ.get("SWG_UPDATE_WRAPPER") or "/usr/local/bin/swg-update"
-_WRAPPER_REF_RE = re.compile(r'^URL="\$\{SWG_BOOTSTRAP_URL:-https://raw\.githubusercontent\.com/SanityProtocol/swg-panel/'
+_WRAPPER_REF_RE = re.compile(r'^URL="\$\{SWG_BOOTSTRAP_URL:-https://raw\.githubusercontent\.com/Endlad2/swg-panel/'
                              r'([^/"]{1,100})/bootstrap\.sh\}"$', re.M)   # update.sh reads it back as [^/]*
 _WRAPPER_REF = {"key": None, "ref": ""}
 
@@ -1124,7 +1124,7 @@ def _ver_ahead(have, ref):
 # panel's release check asked for `?cb=…`, failed with a ValueError, and never learned a new release was out (1.8.8 VM
 # re-run, D4 — q1 on Docker, q3, q6).
 REMOTE_VERSION_URL = (os.environ.get("SWG_LATEST_URL") or "").strip() \
-    or "https://raw.githubusercontent.com/SanityProtocol/swg-panel/main/VERSION"
+    or "https://raw.githubusercontent.com/Endlad2/swg-panel/main/VERSION"
 REMOTE_CHANGELOG_URL = REMOTE_VERSION_URL.rsplit("/", 1)[0] + "/CHANGELOG.md"   # sibling of VERSION on the same ref
 
 def _changelog_url(lang):
@@ -1255,7 +1255,7 @@ def _changelog_entries(lang="en", want=""):
 # The script as an ARGUMENT of `bash -c`, not piped in: under `curl … | sudo bash` sudo-rs (Ubuntu 26.04's sudo) runs it in
 # the background of the terminal, where its first question freezes it (bootstrap.sh _swg_tty_fg).
 UPDATE_CMD = os.environ.get("SWG_UPDATE_CMD") or ("" if PANEL_DECLARATIVE else
-    'sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/SanityProtocol/swg-panel/main/bootstrap.sh)"'
+    'sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/Endlad2/swg-panel/main/bootstrap.sh)"'
     " -- update -y --no-components")
 # Touching this file path-activates a root systemd updater (swg-update.path → swg-update.service),
 # which runs in its OWN cgroup so restarting the panel mid-update doesn't kill it. Set by the installer.
@@ -1485,7 +1485,7 @@ def _turn_store_path(owner, tag, arch):   # the mirrored binary on disk (P2 stor
 # published — no republish needed); shipping a NEW build = prepend ("X.Y.Z", "wdtt-<fork>-X.Y.Z") here + publish that
 # release. The mirror-key `tag` used everywhere downstream (store path, sha-pin, /api/node/turn-binary) is the AUTHOR
 # VERSION now (a bare "wdtt" still resolves to the current build for back-compat with already-installed nodes).
-WDTT_BUILD_REPO = "SanityProtocol/swg-panel"
+WDTT_BUILD_REPO = "Endlad2/swg-panel"
 WDTT_BUILDS = {                               # fork id -> [(author_version, our_release_tag)], newest first
     # One entry per fork, every tag `wdtt-<fork>-<author version>`. The earlier unversioned `wdtt-<fork>` releases
     # were retired, so there is no rollback target until a SECOND build of a fork is published — which is the honest
@@ -16925,7 +16925,7 @@ _GH_RATE = {"until": 0}
 # raw.githubusercontent, a CDN with no API budget. No operator needs a token, at any number of installs.
 _GH_FP_URL = os.environ.get(
     "SWG_FINGERPRINTS_URL",
-    "https://raw.githubusercontent.com/SanityProtocol/swg-panel/fingerprints/client-fingerprints.json")
+    "https://raw.githubusercontent.com/Endlad2/swg-panel/fingerprints/client-fingerprints.json")
 _GH_FP_TTL = 3600
 _GH_FP = {"at": 0.0, "map": {}, "ok": False}
 
@@ -17458,7 +17458,7 @@ def catalog_providers_view(enabled, nodes=None):
     # mode, and these lists cost nothing when nothing routes them. A `curated` key left in a panel's stored
     # `providers` map is inert and drops out on the next settings save (the map is rebuilt from a whitelist).
     _cst = _PROV_STATUS.get("curated") or {}
-    out.insert(0, {"id": "curated", "label": "Curated", "url": "https://github.com/SanityProtocol/swg-panel",
+    out.insert(0, {"id": "curated", "label": "Curated", "url": "https://github.com/Endlad2/swg-panel",
                    "tiers": ["host", "ip"], "builtin": True,
                    "desc": "Built-in recommended presets for common services — panel-maintained, ready to route.",
                    "error": _cst.get("error", ""), "status": _cst.get("status", "idle"),

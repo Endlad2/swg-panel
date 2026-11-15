@@ -179,7 +179,7 @@ stdenvNoCC.mkDerivation {
       This package ships all five programs plus the buildless SPA; the NixOS modules in the same
       flake decide which of them a given host runs.
     '';
-    homepage = "https://github.com/SanityProtocol/swg-panel";
+    homepage = "https://github.com/Endlad2/swg-panel";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
     mainProgram = "swg-panel-server";

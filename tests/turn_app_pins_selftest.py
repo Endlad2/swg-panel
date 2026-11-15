@@ -174,8 +174,8 @@ print("\n[3] the lookup")
 def A(*names):
     return [{"name": n, "browser_download_url": "https://dl/" + n} for n in names]
 REL = {("amurcanov", "csqtt", "v2.5.0"): A("CSQTT-2.5.0.apk"), ("amurcanov", "csqtt", "v2.1.9"): A("CSQTT-universal.apk"),
-       ("SanityProtocol", "swg-panel", "csqtt-app-2.1.9"): A("CSQTT-universal.apk"),   # [7]: csqtt apps are hosted by us
-       ("SanityProtocol", "swg-panel", "csqtt-app-2.5.1"): A("CSQTT-2.5.1-universal.apk"),
+       ("Endlad2", "swg-panel", "csqtt-app-2.1.9"): A("CSQTT-universal.apk"),   # [7]: csqtt apps are hosted by us
+       ("Endlad2", "swg-panel", "csqtt-app-2.5.1"): A("CSQTT-2.5.1-universal.apk"),
        ("amurcanov", "proxy-turn-vk-android", "v1.2.4"): A("WDTT-universal.apk"),
        ("ildarmaga", "wdtt", "v1.5.0"): A("pwdtt-client-linux-amd64", "pwdtt-client-windows-amd64.exe"),
        ("ildarmaga", "wdtt", "v1.5.40"): A("pwdtt-client-linux-amd64-NOT-THIS-SERVER"),
@@ -188,14 +188,14 @@ def api(path):
         CALLS.append(path)
         raise urllib.error.URLError("timed out")      # no network: a URLError, never an HTTPError
     CALLS.append(path)
-    if path == "/repos/SanityProtocol/swg-panel/releases?per_page=100":   # [8]: our releases, newest first as GitHub lists them
-        if ("SanityProtocol", "swg-panel") in DOWN or LIST_DOWN["on"]:
+    if path == "/repos/Endlad2/swg-panel/releases?per_page=100":   # [8]: our releases, newest first as GitHub lists them
+        if ("Endlad2", "swg-panel") in DOWN or LIST_DOWN["on"]:
             raise urllib.error.HTTPError(path, 403, "rate limited", {}, io.BytesIO(b""))
         if LIST_DOWN.get("empty"):
             return []
         odd = [{"tag_name": "csqtt-app-2.5.30", "assets": 5}, {"tag_name": 7}, "junk"] if LIST_DOWN.get("odd") else []
         return odd + [{"tag_name": t, "prerelease": t in PRE, "assets": REL[(o, r, t)], "published_at": PUB.get(t, "2026-10-01T00:00:00Z")}
-                      for (o, r, t) in reversed(list(REL)) if (o, r) == ("SanityProtocol", "swg-panel")]
+                      for (o, r, t) in reversed(list(REL)) if (o, r) == ("Endlad2", "swg-panel")]
     m = re.match(r"/repos/([^/]+)/([^/]+)/releases/tags/(.+)$", path)
     o, r, t = m.group(1), m.group(2), urllib.parse.unquote(m.group(3))
     if (o, r) in DOWN:
@@ -207,7 +207,7 @@ P._gh_api = api
 ch = P._turn_warm_pins(deps)
 pin = lambda o, r, v: P._RELEASE_PIN.get((o, r, v)) or {}
 check("[3] csqtt 2.1.9-4 → our csqtt-app-2.1.9 with its Android installer, though 2.5 is newer; amurcanov 1.2.4-3 → v1.2.4; WDTT-Plus 18-2 → v18; hack-diaz v4.0.3",
-      pin("amurcanov", "csqtt", "2.1.9-4").get("tag") == "v2.1.9" and pin("amurcanov", "csqtt", "2.1.9-4").get("src") == "SanityProtocol/swg-panel@csqtt-app-2.1.9"
+      pin("amurcanov", "csqtt", "2.1.9-4").get("tag") == "v2.1.9" and pin("amurcanov", "csqtt", "2.1.9-4").get("src") == "Endlad2/swg-panel@csqtt-app-2.1.9"
       and pin("amurcanov", "csqtt", "2.1.9-4").get("url", {}).get("android") == "https://dl/CSQTT-universal.apk"
       and pin("amurcanov", "proxy-turn-vk-android", "1.2.4-3").get("tag") == "v1.2.4" and pin("Ivan4537", "WDTT-Plus", "18-2").get("tag") == "v18"
       and pin("hackdiaz-dev", "free-turn-proxy", "v4.0.3").get("tag") == "v4.0.3", {k: v.get("tag") for k, v in key(P._RELEASE_PIN).items()})
@@ -317,9 +317,9 @@ check("[6] any snapshot shape yields the running versions, a stray value skipped
 
 print("\n[7] apps hosted in our repository")
 P._RELEASE_PIN.clear(); P._PIN_SEEN.clear(); P._PIN_TRIED.clear(); P._PIN_WANTED = {}; CALLS.clear()
-REL[("SanityProtocol", "swg-panel", "csqtt-app-2.5.1")] = A("CSQTT-2.5.1-universal.apk", "CSQTT-2.5.1-arm64-v8a.apk",
+REL[("Endlad2", "swg-panel", "csqtt-app-2.5.1")] = A("CSQTT-2.5.1-universal.apk", "CSQTT-2.5.1-arm64-v8a.apk",
                                                             "csqtt-app-2.5.1.patch", "CSQTT-LICENSE.txt", "build-apk.sh")
-REL[("SanityProtocol", "swg-panel", "csqtt-app-2.1.9")] = A("CSQTT-universal.apk", "CSQTT-arm64-v8a.apk", "CSQTT-LICENSE.txt")
+REL[("Endlad2", "swg-panel", "csqtt-app-2.1.9")] = A("CSQTT-universal.apk", "CSQTT-arm64-v8a.apk", "CSQTT-LICENSE.txt")
 REL[("amurcanov", "csqtt", "v2.1.5")] = A("CSQTT-2.1.5.apk")
 REL[("amurcanov", "csqtt", "v2.0.1")] = A("CSQTT-2.0.1.apk")
 d7 = {"node_snaps": {"n1": {"csqtt": [{"iface": "c1", "fork": "csqtt", "version": "2.5.1", "line": "2.5"},
@@ -331,9 +331,9 @@ d7 = {"node_snaps": {"n1": {"csqtt": [{"iface": "c1", "fork": "csqtt", "version"
 P._turn_warm_pins(d7)
 own = lambda v: (pin("amurcanov", "csqtt", v).get("tag"), pin("amurcanov", "csqtt", v).get("src"), pin("amurcanov", "csqtt", v).get("url"))
 check("[7] 2.5.1 (the build the panel lists on 2.5) → our csqtt-app-2.5.1, shown as v2.5.1, its universal APK",
-      own("2.5.1") == ("v2.5.1", "SanityProtocol/swg-panel@csqtt-app-2.5.1", {"android": "https://dl/CSQTT-2.5.1-universal.apk"}), own("2.5.1"))
+      own("2.5.1") == ("v2.5.1", "Endlad2/swg-panel@csqtt-app-2.5.1", {"android": "https://dl/CSQTT-2.5.1-universal.apk"}), own("2.5.1"))
 check("[7] every listed 2.1.x build (2.1.9-4, 2.1.9) → our csqtt-app-2.1.9, shown as v2.1.9",
-      own("2.1.9-4") == own("2.1.9") == ("v2.1.9", "SanityProtocol/swg-panel@csqtt-app-2.1.9", {"android": "https://dl/CSQTT-universal.apk"}),
+      own("2.1.9-4") == own("2.1.9") == ("v2.1.9", "Endlad2/swg-panel@csqtt-app-2.1.9", {"android": "https://dl/CSQTT-universal.apk"}),
       (own("2.1.9-4"), own("2.1.9")))
 check("[7] the 2.0.1 rollback row (an older protocol on the 2.1 line) keeps his v2.0.1, not our 2.1.9 app",
       own("2.0.1")[:2] == ("v2.0.1", None), own("2.0.1"))
@@ -343,31 +343,31 @@ check("[7] …its files are the APKs only — no patch, licence or build script"
 check("[7] a build the panel does not list asks his repository (a hand-placed 2.1.5 → his v2.1.5; 2.5.0-1 → his v2.5.0)",
       own("2.1.5")[:2] == ("v2.1.5", None) and own("2.5.0-1")[:2] == ("v2.5.0", None), (own("2.1.5"), own("2.5.0-1")))
 check("[7] one lookup per hosted release per pass, though three 2.1 builds share it",
-      CALLS.count("/repos/SanityProtocol/swg-panel/releases/tags/csqtt-app-2.1.9") == 1
-      and CALLS.count("/repos/SanityProtocol/swg-panel/releases/tags/csqtt-app-2.5.1") == 1, CALLS)
+      CALLS.count("/repos/Endlad2/swg-panel/releases/tags/csqtt-app-2.1.9") == 1
+      and CALLS.count("/repos/Endlad2/swg-panel/releases/tags/csqtt-app-2.5.1") == 1, CALLS)
 CALLS.clear(); P._turn_warm_pins(d7, refresh=True)
 check("[7] the hourly refresh asks our releases again, once each, never his for a listed build",
-      CALLS.count("/repos/SanityProtocol/swg-panel/releases/tags/csqtt-app-2.1.9") == 1
-      and CALLS.count("/repos/SanityProtocol/swg-panel/releases/tags/csqtt-app-2.5.1") == 1
+      CALLS.count("/repos/Endlad2/swg-panel/releases/tags/csqtt-app-2.1.9") == 1
+      and CALLS.count("/repos/Endlad2/swg-panel/releases/tags/csqtt-app-2.5.1") == 1
       and not [c for c in CALLS if "/amurcanov/csqtt/" in c and ("v2.1.9" in c or "2.5.1" in c)], CALLS)
 P._RELEASE_PIN[("amurcanov", "csqtt", "2.1.9-4")] = {"tag": "v2.1.9", "page": "page/v2.1.9", "assets": [], "url": {"android": "https://dl/his.apk"}}
 CALLS.clear(); P._turn_warm_pins(d7)
 check("[7] a pin cached from his repository (before the upgrade) is asked again on the next 5-minute pass, not served",
-      own("2.1.9-4")[1] == "SanityProtocol/swg-panel@csqtt-app-2.1.9", own("2.1.9-4"))
-held = REL.pop(("SanityProtocol", "swg-panel", "csqtt-app-2.1.9")); CALLS.clear(); P._turn_warm_pins(d7, refresh=True)
+      own("2.1.9-4")[1] == "Endlad2/swg-panel@csqtt-app-2.1.9", own("2.1.9-4"))
+held = REL.pop(("Endlad2", "swg-panel", "csqtt-app-2.1.9")); CALLS.clear(); P._turn_warm_pins(d7, refresh=True)
 check("[7] our release missing → his release by tag, as before (2.1.9-4 → his v2.1.9)",
       own("2.1.9-4")[0] == "v2.1.9" and pin("amurcanov", "csqtt", "2.1.9-4").get("page") == "page/v2.1.9", pin("amurcanov", "csqtt", "2.1.9-4"))
 CALLS.clear(); P._turn_warm_pins(d7)
 check("[7] …and that stand-in is kept by the 5-minute pass — GitHub is not asked again until the hourly refresh",
       not [c for c in CALLS if "2.1.9" in c], CALLS)
-REL[("SanityProtocol", "swg-panel", "csqtt-app-2.1.9")] = A("CSQTT-LICENSE.txt")   # created, its APKs still uploading
+REL[("Endlad2", "swg-panel", "csqtt-app-2.1.9")] = A("CSQTT-LICENSE.txt")   # created, its APKs still uploading
 CALLS.clear(); P._turn_warm_pins(d7, refresh=True)
 check("[7] a release of ours with no APK yet counts as missing: his v2.1.9 stands in",
       pin("amurcanov", "csqtt", "2.1.9-4").get("page") == "page/v2.1.9", pin("amurcanov", "csqtt", "2.1.9-4"))
-REL[("SanityProtocol", "swg-panel", "csqtt-app-2.1.9")] = held
-DOWN.add(("SanityProtocol", "swg-panel")); P._PIN_TRIED.clear(); CALLS.clear(); P._turn_warm_pins(d7, refresh=True)
+REL[("Endlad2", "swg-panel", "csqtt-app-2.1.9")] = held
+DOWN.add(("Endlad2", "swg-panel")); P._PIN_TRIED.clear(); CALLS.clear(); P._turn_warm_pins(d7, refresh=True)
 check("[7] GitHub refusing our release (403): ONE request for it, and every build sharing it rests the hour",
-      CALLS.count("/repos/SanityProtocol/swg-panel/releases/tags/csqtt-app-2.1.9") == 1
+      CALLS.count("/repos/Endlad2/swg-panel/releases/tags/csqtt-app-2.1.9") == 1
       and all(("amurcanov", "csqtt", v) in P._PIN_TRIED for v in ("2.1.9-4", "2.1.9")), (CALLS, sorted(key(P._PIN_TRIED))))
 check("[7] …and the catalog's latest falls back to his on that refusal", P._hosted_latest("amurcanov", "csqtt") is None)
 DOWN.clear(); P._PIN_TRIED.clear()
@@ -385,20 +385,20 @@ check("[7] …and _turn_warm_assets takes it for the CSQTT app: its Android butt
       (P._RELEASE_INFO.get(("amurcanov", "csqtt")), P._PLATFORM_ASSET.get(("amurcanov", "csqtt", "android"))))
 
 print("\n[8] the 2.5 line follows our newest 2.5.x release (operator, 2026-10-23)")
-SP = ("SanityProtocol", "swg-panel")
+SP = ("Endlad2", "swg-panel")
 TAG25 = lambda: P._hosted_tag("csqtt-app-2.5.1+")
 P._GH_COMMIT_CACHE.clear(); P._RELEASE_PIN.clear(); P._PIN_SEEN.clear(); P._PIN_TRIED.clear(); P._PIN_WANTED = {}
 CALLS.clear(); P._turn_warm_pins(d7)
 check("[8] only 2.5.1 released → csqtt-app-2.5.1, from ONE listing of our releases in the pass",
-      own("2.5.1")[1] == "SanityProtocol/swg-panel@csqtt-app-2.5.1" and CALLS.count("/repos/SanityProtocol/swg-panel/releases?per_page=100") == 1,
+      own("2.5.1")[1] == "Endlad2/swg-panel@csqtt-app-2.5.1" and CALLS.count("/repos/Endlad2/swg-panel/releases?per_page=100") == 1,
       (own("2.5.1"), CALLS))
 REL[SP + ("csqtt-app-2.5.2",)] = A("CSQTT-2.5.2-universal.apk", "CSQTT-LICENSE.txt")
 CALLS.clear(); P._turn_warm_pins(d7)
 check("[8] …the answer is kept for the hour: the next 5-minute pass lists nothing and still offers 2.5.1",
-      own("2.5.1")[1] == "SanityProtocol/swg-panel@csqtt-app-2.5.1" and not [c for c in CALLS if "releases?per_page" in c], (own("2.5.1"), CALLS))
+      own("2.5.1")[1] == "Endlad2/swg-panel@csqtt-app-2.5.1" and not [c for c in CALLS if "releases?per_page" in c], (own("2.5.1"), CALLS))
 P._GH_COMMIT_CACHE.clear(); CALLS.clear(); P._turn_warm_pins(d7)
 check("[8] 2.5.2 released, the hour gone → a 2.5 server's app is our csqtt-app-2.5.2 (v2.5.2) on the 5-minute pass, no refresh needed",
-      own("2.5.1") == ("v2.5.2", "SanityProtocol/swg-panel@csqtt-app-2.5.2", {"android": "https://dl/CSQTT-2.5.2-universal.apk"}), own("2.5.1"))
+      own("2.5.1") == ("v2.5.2", "Endlad2/swg-panel@csqtt-app-2.5.2", {"android": "https://dl/CSQTT-2.5.2-universal.apk"}), own("2.5.1"))
 REL[SP + ("csqtt-app-2.5.2-2",)] = A("CSQTT-2.5.2-universal.apk")
 P._GH_COMMIT_CACHE.clear()
 check("[8] a rebuild of ours (2.5.2-2) is above 2.5.2", TAG25() == "csqtt-app-2.5.2-2", TAG25())
@@ -426,18 +426,18 @@ check("[8] the listing refused when the hour is up → the last answer stands", 
 CALLS.clear(); TAG25()
 check("[8] …and it rests five minutes: the next ask makes no request (not one timeout per server build)", not CALLS, CALLS)
 P._GH_COMMIT_CACHE["hosted:csqtt-app-2.5.1+"]["at"] -= 301; CALLS.clear(); TAG25()
-check("[8] …five minutes on, the listing is asked again", CALLS == ["/repos/SanityProtocol/swg-panel/releases?per_page=100"], CALLS)
+check("[8] …five minutes on, the listing is asked again", CALLS == ["/repos/Endlad2/swg-panel/releases?per_page=100"], CALLS)
 LIST_DOWN["on"] = False; LIST_DOWN["empty"] = True; P._GH_COMMIT_CACHE["hosted:csqtt-app-2.5.1+"]["at"] = 0
 check("[8] a listing that answers but names no 2.5.x (empty, or past its first page) keeps the last answer, not the floor",
       TAG25() == "csqtt-app-2.5.14", TAG25())
 LIST_DOWN["empty"] = False; P._GH_COMMIT_CACHE.clear(); P._RELEASE_PIN.clear(); P._PIN_SEEN.clear(); P._PIN_TRIED.clear(); P._PIN_WANTED = {}
 P._turn_warm_pins(d7)
-check("[8] (set-up) a 2.5 server pinned on our csqtt-app-2.5.14", own("2.5.1")[1] == "SanityProtocol/swg-panel@csqtt-app-2.5.14", own("2.5.1"))
+check("[8] (set-up) a 2.5 server pinned on our csqtt-app-2.5.14", own("2.5.1")[1] == "Endlad2/swg-panel@csqtt-app-2.5.14", own("2.5.1"))
 P._GH_COMMIT_CACHE.clear(); LIST_DOWN["on"] = True                     # a restart: memory gone, pins restored, no listing
 CALLS.clear(); P._turn_warm_pins(d7, refresh=True)
 check("[8] after a restart with the listing failing, the restored pin (2.5.14) stays — never rewritten to 2.5.1 and published",
-      own("2.5.1")[1] == "SanityProtocol/swg-panel@csqtt-app-2.5.14"
-      and "/repos/SanityProtocol/swg-panel/releases/tags/csqtt-app-2.5.1" not in CALLS, (own("2.5.1"), CALLS))
+      own("2.5.1")[1] == "Endlad2/swg-panel@csqtt-app-2.5.14"
+      and "/repos/Endlad2/swg-panel/releases/tags/csqtt-app-2.5.1" not in CALLS, (own("2.5.1"), CALLS))
 P._GH_COMMIT_CACHE.clear()
 check("[8] …and the catalog's latest says the same (2.5.14)", (P._hosted_latest("amurcanov", "csqtt") or {}).get("tag") == "v2.5.14",
       P._hosted_latest("amurcanov", "csqtt"))
@@ -455,13 +455,13 @@ check("[8] (F11) odd release objects (non-list assets, a numeric tag, junk) are 
 LIST_DOWN["odd"] = False
 P._GH_COMMIT_CACHE.clear(); P._RELEASE_INFO.clear()
 P._RELEASE_PIN.clear(); P._RELEASE_PIN[("amurcanov", "csqtt", "2.5.1")] = {"tag": "v2.5.0", "page": "page/v2.5.0", "assets": [], "url": {},
-                                                                          "src": "SanityProtocol/swg-panel@csqtt-app-2.5.20"}
+                                                                          "src": "Endlad2/swg-panel@csqtt-app-2.5.20"}
 LIST_DOWN["on"] = True
 check("[8] (F7) a pin his release stood in for (ours 404, deleted) is not taken as ours: listing refused → the floor, not 2.5.20",
       TAG25() == "csqtt-app-2.5.1", TAG25())
 P._GH_COMMIT_CACHE["hosted:csqtt-app-2.5.1+"] = {"res": "csqtt-app-2.5.2", "at": 0}
 P._RELEASE_PIN[("amurcanov", "csqtt", "2.5.1")] = {"tag": "v2.5.3", "page": "page/csqtt-app-2.5.3", "assets": [], "url": {},
-                                                  "src": "SanityProtocol/swg-panel@csqtt-app-2.5.3"}
+                                                  "src": "Endlad2/swg-panel@csqtt-app-2.5.3"}
 check("[8] (F8) this run's answer (2.5.2) beats a stale higher tag a pin still names (2.5.3, withdrawn)", TAG25() == "csqtt-app-2.5.2", TAG25())
 LIST_DOWN["on"] = False; P._RELEASE_PIN.clear()
 CALLS.clear()

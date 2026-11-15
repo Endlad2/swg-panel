@@ -251,7 +251,7 @@ for how, kw in (("a panel serving TLS itself (no nginx vhost — the default)", 
 
 print("\n[8] an operator's own drop-in for the panel")
 DI = {"zz-swg-update.conf": "[Service]\nEnvironment=SWG_UPDATE_TRIGGER=/var/lib/swg-panel/update.request\n",
-      "latest.conf": "[Service]\nEnvironment=SWG_LATEST_URL=https://raw.githubusercontent.com/SanityProtocol/swg-panel/dev/VERSION\n"}
+      "latest.conf": "[Service]\nEnvironment=SWG_LATEST_URL=https://raw.githubusercontent.com/Endlad2/swg-panel/dev/VERSION\n"}
 R, out = uninstall(delete=False, dropins=DI)
 dd = R + "/sd/swg-panel-server.service.d"
 check("[8] keep → the operator's drop-in stays, ours goes, and the line says so",

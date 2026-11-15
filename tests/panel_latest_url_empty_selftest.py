@@ -16,9 +16,9 @@ SERVER = os.environ.get("SWG_PANEL_SERVER") or os.path.join(HERE, "..", "swg-pan
 PERTURB = "--perturb" in sys.argv
 src = open(SERVER, encoding="utf-8").read()
 if PERTURB:
-    a = 'REMOTE_VERSION_URL = (os.environ.get("SWG_LATEST_URL") or "").strip() \\\n    or "https://raw.githubusercontent.com/SanityProtocol/swg-panel/main/VERSION"'
+    a = 'REMOTE_VERSION_URL = (os.environ.get("SWG_LATEST_URL") or "").strip() \\\n    or "https://raw.githubusercontent.com/Endlad2/swg-panel/main/VERSION"'
     assert src.count(a) == 1, "perturbation anchor missing — would FALSE-PASS"
-    src = src.replace(a, 'REMOTE_VERSION_URL = os.environ.get("SWG_LATEST_URL", "https://raw.githubusercontent.com/SanityProtocol/swg-panel/main/VERSION")')
+    src = src.replace(a, 'REMOTE_VERSION_URL = os.environ.get("SWG_LATEST_URL", "https://raw.githubusercontent.com/Endlad2/swg-panel/main/VERSION")')
 path = os.path.join(tempfile.mkdtemp(prefix="envawg-"), "panel.py"); open(path, "w").write(src)
 os.environ["SWG_LATEST_URL"] = ""
 loader = importlib.machinery.SourceFileLoader("swgpanel_envawg", path)

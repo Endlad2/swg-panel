@@ -72,7 +72,7 @@ case "$n" in
       inspect) exit 1 ;;
       compose) [ "$2" = version ] && exit 0 ;;
       network) [ "$2" = ls ] && echo net-abc123 ;;
-      images) echo "ghcr.io/sanityprotocol/swg-node:sha-abc1234" ;;
+      images) echo "ghcr.io/endlad2/swg-node:sha-abc1234" ;;
     esac ;;
   ip)
     case "$*" in

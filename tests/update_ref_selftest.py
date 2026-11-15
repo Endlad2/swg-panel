@@ -229,13 +229,13 @@ HINT = m.group(0) if m else ""
 if PERTURB_HINT:
     _a = re.search(r'\n  local _r=[^\n]*\n  warn "    sudo bash -c[^\n]*\n', HINT)
     assert _a, "perturbation anchor missing — would FALSE-PASS"
-    HINT = HINT.replace(_a.group(0), "\n  warn '    sudo bash -c \"$(curl -fsSL https://raw.githubusercontent.com/SanityProtocol/swg-panel/main/bootstrap.sh)\" -- host'\n")
+    HINT = HINT.replace(_a.group(0), "\n  warn '    sudo bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Endlad2/swg-panel/main/bootstrap.sh)\" -- host'\n")
 _pd = tempfile.mkdtemp(prefix="unitwarn-"); open(os.path.join(_pd, "swg-panel-server"), "w").close()
 assert HINT.count("/etc/systemd/system/swg-panel-server.service") == 1, "the unit check is not where [5] reads it"
 HINT = HINT.replace("/etc/systemd/system/swg-panel-server.service", _pd + "/no-such.service")   # the unit is missing, on any box
-for ref, want in (("dev", 'sudo bash -c "SWG_REF=dev; $(curl -fsSL https://raw.githubusercontent.com/SanityProtocol/swg-panel/dev/bootstrap.sh)" -- host'),
-                  ("main", 'sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/SanityProtocol/swg-panel/main/bootstrap.sh)" -- host'),
-                  (None, 'sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/SanityProtocol/swg-panel/main/bootstrap.sh)" -- host')):
+for ref, want in (("dev", 'sudo bash -c "SWG_REF=dev; $(curl -fsSL https://raw.githubusercontent.com/Endlad2/swg-panel/dev/bootstrap.sh)" -- host'),
+                  ("main", 'sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/Endlad2/swg-panel/main/bootstrap.sh)" -- host'),
+                  (None, 'sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/Endlad2/swg-panel/main/bootstrap.sh)" -- host')):
     env = {k: v for k, v in os.environ.items() if k != "SWG_REF"}
     if ref is not None:
         env["SWG_REF"] = ref
@@ -272,7 +272,7 @@ for args, want, what in (((("dev",), {}), "dev", "a bare node on dev reports dev
                          ((("dev",), {"cmd": "MINE"}), "", "a node running an operator's own update_cmd reports no ref (update_custom says it)")):
     got = shown(*args[0], **args[1])
     check("[6] %s" % what, got == want, repr(got)); _s6.append(what)
-SWGT = ("curl -fsSL https://raw.githubusercontent.com/SanityProtocol/swg-panel/dev/bootstrap.sh"
+SWGT = ("curl -fsSL https://raw.githubusercontent.com/Endlad2/swg-panel/dev/bootstrap.sh"
         " | SWG_REF=dev bash -s update -y --no-components --node-only")
 for (a, kw), want, what in ((((None,), {"cmd": SWGT}), True, "an own update_cmd is reported as update_custom (swgt's dev-pinned one)"),
                             (((None,), {"cmd": ["bash", "/root/up.sh", 1]}), True, "…a list one too, never parsed (a hand-edited int cannot break the snapshot)"),

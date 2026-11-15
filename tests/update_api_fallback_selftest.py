@@ -61,13 +61,13 @@ _spec = importlib.util.spec_from_loader("swgp", importlib.machinery.SourceFileLo
 m = importlib.util.module_from_spec(_spec)
 exec(compile(_src, PANEL, "exec"), m.__dict__)
 
-RAW = "https://raw.githubusercontent.com/SanityProtocol/swg-panel/main/VERSION"
-SHAURL = "https://raw.githubusercontent.com/SanityProtocol/swg-panel/abc1234/VERSION?cb=99"
+RAW = "https://raw.githubusercontent.com/Endlad2/swg-panel/main/VERSION"
+SHAURL = "https://raw.githubusercontent.com/Endlad2/swg-panel/abc1234/VERSION?cb=99"
 
 # ── [1] the URL is translated, not guessed ───────────────────────────────────────────────────────────────
 got = m._api_contents_url(SHAURL)
 check("[1] raw URL → API contents URL, ref preserved",
-      got == "https://api.github.com/repos/SanityProtocol/swg-panel/contents/VERSION?ref=abc1234", got)
+      got == "https://api.github.com/repos/Endlad2/swg-panel/contents/VERSION?ref=abc1234", got)
 check("[1b] the ?cb= CDN buster is dropped", "cb=" not in got, got)
 check("[1c] a nested path survives",
       m._api_contents_url("https://raw.githubusercontent.com/o/r/main/docs/a/b.md")

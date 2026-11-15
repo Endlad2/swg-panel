@@ -65,14 +65,14 @@ def boot(ref, wrapper=None, agent_ref=None, track=None):
     d = tempfile.mkdtemp(prefix="trk-"); tmp = os.path.join(d, "tmp"); os.makedirs(tmp)
     wpath = os.path.join(d, "swg-update"); cpath = os.path.join(d, "config.json")
     if wrapper is not None:
-        open(wpath, "w").write('URL="https://raw.githubusercontent.com/SanityProtocol/swg-panel/%s/bootstrap.sh"\n' % wrapper)
+        open(wpath, "w").write('URL="https://raw.githubusercontent.com/Endlad2/swg-panel/%s/bootstrap.sh"\n' % wrapper)
     if agent_ref is not None:
         json.dump({"panel": {"url": "https://192.168.77.5:2087"}, "node": {"update_ref": agent_ref}}, open(cpath, "w"))
     blk = fetch.replace("/usr/local/bin/swg-update", wpath).replace("/etc/swg-agent/config.json", cpath)
     for name, body in (("git", "exit 0"), ("curl", "exit 0"),
                        ("tar", 'for a; do last="$a"; done; mkdir -p "$last/swg-panel-0123456789abcdef0123456789abcdef01234567"')):
         p = os.path.join(d, name); open(p, "w").write("#!/bin/sh\n" + body + "\n"); os.chmod(p, 0o755)
-    script = ('set -euo pipefail\nREF=%s\nexport SWG_REF="$REF"\nREPO=https://github.com/SanityProtocol/swg-panel\nTMP=%s\n'
+    script = ('set -euo pipefail\nREF=%s\nexport SWG_REF="$REF"\nREPO=https://github.com/Endlad2/swg-panel\nTMP=%s\n'
               'need(){ command -v "$1" >/dev/null 2>&1; }\nwarn(){ :; }\ninfo(){ :; }\nb(){ printf %%s "$*"; }\n'
               'die(){ echo "DIE $*"; exit 9; }\n%s\necho "EXPORTED=$SWG_REF"\n') % (ref, tmp, blk)
     env = dict(os.environ, PATH=d + ":" + os.environ["PATH"]); env.pop("SWG_TRACK", None)

@@ -62,7 +62,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      # GHCR refs must be lowercase but the owner (SanityProtocol) is mixed-case — lowercase it once.
+      # GHCR refs must be lowercase but the owner (Endlad2) is mixed-case — lowercase it once.
       - id: ref
         env:
           OWNER: ${{ github.repository_owner }}

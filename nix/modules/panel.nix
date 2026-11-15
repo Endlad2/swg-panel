@@ -386,7 +386,7 @@ in
 
     image = mkOption {
       type = types.str;
-      default = "ghcr.io/sanityprotocol/swg-panel:latest";
+      default = "ghcr.io/endlad2/swg-panel:latest";
       description = ''
         The panel image, which swg-sub also runs (swg-sub is pure stdlib and needs no build of its
         own). **Pin it by digest** if you want a `nixos-rebuild --rollback` that goes back to the

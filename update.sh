@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # update.sh — update an existing swg-panel install in place, from the latest GitHub code.
 #
-#   sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/SanityProtocol/swg-panel/main/bootstrap.sh)" -- update
+#   sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/Endlad2/swg-panel/main/bootstrap.sh)" -- update
 #
 # bootstrap.sh fetches the latest repo and runs this from it. It AUTO-DETECTS which
 # components are installed — covering every shape (bare-metal host / master / node,
@@ -1674,7 +1674,7 @@ ensure_panel_unit_warn(){   # DETECT + WARN only — never recreate. The panel u
   # …from the ref this box follows (main pinned here re-installed main over a dev box: IN-8); a ref other than main rides
   # INSIDE the string, as bootstrap's own hand-back does — sudo drops SWG_REF in front of it
   local _r="${SWG_REF:-main}" _p=""; [ "$_r" = main ] || _p="SWG_REF=$(printf '%q' "$_r"); "
-  warn "    sudo bash -c \"$_p\$(curl -fsSL https://raw.githubusercontent.com/SanityProtocol/swg-panel/$_r/bootstrap.sh)\" -- host"
+  warn "    sudo bash -c \"$_p\$(curl -fsSL https://raw.githubusercontent.com/Endlad2/swg-panel/$_r/bootstrap.sh)\" -- host"
 }
 
 ensure_netctl_docker(){   # the docker address helper on a panel-bearing docker host: units HEALED if missing, the drainer at this release.
@@ -2227,11 +2227,11 @@ PYCON
 import re, sys
 comp, envf = sys.argv[1], sys.argv[2]
 text = orig = open(comp).read()
-TURN = ('      SWG_TURN_IMAGE: "${SWG_TURN_IMAGE:-ghcr.io/sanityprotocol/swg-node:${SWG_IMAGE_TAG:-latest}}"'
+TURN = ('      SWG_TURN_IMAGE: "${SWG_TURN_IMAGE:-ghcr.io/endlad2/swg-node:${SWG_IMAGE_TAG:-latest}}"'
         '  # image swg-noded runs each turn-proxy container from')
 
 # a) the service images themselves
-pat = re.compile(r'^(\s*image:\s*ghcr\.io/sanityprotocol/swg-(?:panel|node)):([^\s$]+)\s*$', re.M)
+pat = re.compile(r'^(\s*image:\s*ghcr\.io/endlad2/swg-(?:panel|node)):([^\s$]+)\s*$', re.M)
 pins = {m.group(2) for m in pat.finditer(text)}
 text = pat.sub(lambda m: m.group(1) + ":${SWG_IMAGE_TAG:-latest}", text)
 
@@ -2239,7 +2239,7 @@ text = pat.sub(lambda m: m.group(1) + ":${SWG_IMAGE_TAG:-latest}", text)
 #    why a node moved to a new tag kept starting its turn proxies from main: the variable it reads never
 #    followed the tag. Rewrite the stale default; a value the operator set explicitly in .env still wins.
 # the trailing comment is part of the shipped line, so the pattern has to tolerate one
-tpat = re.compile(r'^\s*SWG_TURN_IMAGE:\s*"?\$\{SWG_TURN_IMAGE:-ghcr\.io/sanityprotocol/swg-node:(?!\$)[^}"]*\}"?[^\n]*$', re.M)
+tpat = re.compile(r'^\s*SWG_TURN_IMAGE:\s*"?\$\{SWG_TURN_IMAGE:-ghcr\.io/endlad2/swg-node:(?!\$)[^}"]*\}"?[^\n]*$', re.M)
 text = tpat.sub(TURN, text)
 
 # c) ...or add it, when the compose predates the variable entirely

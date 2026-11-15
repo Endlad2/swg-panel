@@ -1,4 +1,4 @@
-﻿<p align="center"><b>English</b> · <a href="README.ru.md">Русский</a></p>
+<p align="center"><b>English</b> · <a href="README.ru.md">Русский</a></p>
 
 # swgPanel on NixOS
 
@@ -101,7 +101,7 @@ Paste this, replacing **`myhost`** with what `hostname` printed:
 ```nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";   # ← YOUR channel, from `nixos-version`
-  inputs.swg-panel.url = "github:SanityProtocol/swg-panel";
+  inputs.swg-panel.url = "github:Endlad2/swg-panel";
 
   outputs = { self, nixpkgs, swg-panel, ... }: {
     nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {    # ← YOUR hostname
@@ -139,15 +139,15 @@ You do not have to touch `/etc/nixos/configuration.nix` again — the flake pull
 below assume a flake:
 
 ```nix
-(import (fetchTarball "https://github.com/Endlad2/swg-panelarchive/main.tar.gz"))
+(import (fetchTarball "https://github.com/Endlad2/swg-panel/archive/main.tar.gz"))
   .packages.x86_64-linux.default
 ```
 
 **Want to look before you commit to any of this?** These touch nothing on the machine:
 
 ```bash
-nix build github:SanityProtocol/swg-panel          # just builds the package
-nix flake check github:SanityProtocol/swg-panel    # ⚠️ builds two NixOS VMs — minutes, not seconds
+nix build github:Endlad2/swg-panel          # just builds the package
+nix flake check github:Endlad2/swg-panel    # ⚠️ builds two NixOS VMs — minutes, not seconds
 ```
 
 To build against **your** nixpkgs rather than ours, add the overlay in `configuration.nix`:

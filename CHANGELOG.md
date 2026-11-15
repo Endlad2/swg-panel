@@ -416,7 +416,7 @@ earlier releases predate the changelog — see the git history. · Русски�
 - **Every release's Docker images stay available, tagged with the version.** Each release's push deleted the
   previous release's images, so a Docker server had nothing to go back to — the 1.8.5 and 1.8.6 images are gone.
   From 1.8.7 on they are kept, and from this release on each is also published as
-  `ghcr.io/sanityprotocol/swg-panel:<version>` and `swg-node:<version>` — this one as `1.8.8-beta`.
+  `ghcr.io/endlad2/swg-panel:<version>` and `swg-node:<version>` — this one as `1.8.8-beta`.
 - **Newer server builds.** csqtt 2.1.9-4, qWDTT 1.4.3-4, WDTT-Plus 18-2 and ildarmaga 1.5.0-4; what they fix is
   under Fixed and Security, and ildarmaga 1.5.0-4 also takes the client DNS setting (see Added).
 
@@ -787,7 +787,7 @@ earlier releases predate the changelog — see the git history. · Русски�
   that are not loss again. A Docker node taken back adds an untagged copy beside each interface's NAT rule at its start
   — a harmless duplicate, removed on the way forward.
 - **Going back takes one command.** On bare metal `SWG_REF` now takes a commit:
-  `curl -fsSL https://raw.githubusercontent.com/SanityProtocol/swg-panel/main/bootstrap.sh | sudo SWG_REF=df3bb45 bash -s update`
+  `curl -fsSL https://raw.githubusercontent.com/Endlad2/swg-panel/main/bootstrap.sh | sudo SWG_REF=df3bb45 bash -s update`
   installs 1.8.7-beta, and the box's **Update** button goes on following the branch it followed — the header offers
   this release again, and one press brings it back. On Docker, set `SWG_IMAGE_TAG=sha-df3bb45` in the install's
   `.env` and run `docker compose pull` and `docker compose up -d` with its profile; remove the line to come forward.

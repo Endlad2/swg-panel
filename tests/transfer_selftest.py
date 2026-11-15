@@ -38,7 +38,7 @@ S = load(SERVER, "swgpanel_xfer")
 N = load(NODED, "swgnoded_xfer", env={"SWG_NODED_STATE": _STATE,
                                       "SWG_AGENT_CONFIG": os.path.join(_STATE, "config.json")})
 
-BOOT = "https://raw.githubusercontent.com/SanityProtocol/swg-panel/main/bootstrap.sh"
+BOOT = "https://raw.githubusercontent.com/Endlad2/swg-panel/main/bootstrap.sh"
 
 print("\n[1] the paste — only two of the five enrolment shapes can BE one (§3.2)")
 g = S.transfer_parse("curl -fsSL %s | sudo bash -s node -key ABCDEFGHIJKLMNOP1234 -host https://p.example.org:8443" % BOOT)

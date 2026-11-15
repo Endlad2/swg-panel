@@ -471,8 +471,8 @@ U = SRC["UNINST"]
 DOCKER_STUB = r'''#!/bin/bash
 echo "docker $*" >> "$LOG"
 case "$1" in
-  inspect) [ -n "${NO_CTR:-}" ] && exit 1; echo "ghcr.io/sanityprotocol/swg-node:sha-test"; exit 0;;
-  image) [ "$*" = "image inspect ghcr.io/sanityprotocol/swg-node:${ENV_TAG:-none}" ] && exit 0; exit 1;;   # only the one its .env names
+  inspect) [ -n "${NO_CTR:-}" ] && exit 1; echo "ghcr.io/endlad2/swg-node:sha-test"; exit 0;;
+  image) [ "$*" = "image inspect ghcr.io/endlad2/swg-node:${ENV_TAG:-none}" ] && exit 0; exit 1;;   # only the one its .env names
   stop) exit 0;;
   run)
     case " $* " in
@@ -533,7 +533,7 @@ i_list = first(calls, lambda c: c.startswith("docker run") and "list tables" in 
 i_batch = first(calls, lambda c: c.startswith("docker run") and " -f -" in c)
 check("[3] the container is stopped first, then its interfaces deleted, then every swg* table in one batch by the node's own image",
       rc == 0 and 0 <= i_stop < i_if < i_list < i_batch and not left and batch == "delete table inet swg_reach\ndelete table inet swg_smart\n"
-      and all("--net host" in c and "--cap-add NET_ADMIN" in c and "--entrypoint nft ghcr.io/sanityprotocol/swg-node:sha-test" in c
+      and all("--net host" in c and "--cap-add NET_ADMIN" in c and "--entrypoint nft ghcr.io/endlad2/swg-node:sha-test" in c
               for c in calls if c.startswith("docker run")), (rc, out, log, batch, left))
 check("[3] …each named in one line; another program's table never", [l for l in out.splitlines() if l.startswith(("INFO", "WARN"))]
       == ["INFO   removed leftover host interface wg0", "INFO   removed the node's nft tables with its own nft: swg_reach swg_smart"]
@@ -546,11 +546,11 @@ check("[3] a failed read is said, and the host-side sweep still runs (it returns
       rc == 0 and "END" in out and "WARN could not read the node's nft tables with its own nft" in out and not batch, (out, log))
 rc, out, log, batch, left = sweep_run(NO_CTR=1)
 check("[3] no swg-node container and no image of it → nothing at all", rc == 0 and out.strip() == "END" and log ==
-      "docker inspect -f {{.Config.Image}} swg-node\ndocker image inspect ghcr.io/sanityprotocol/swg-node:latest\n" and left == ["wg0"], (out, log))
+      "docker inspect -f {{.Config.Image}} swg-node\ndocker image inspect ghcr.io/endlad2/swg-node:latest\n" and left == ["wg0"], (out, log))
 rc, out, log, batch, left = sweep_run(NO_CTR=1, ENV_TAG="sha-env")
 check("[3] its container gone, the image its .env names on the box (1.8.8 deferred #15) → the same sweep, with that image",
       rc == 0 and not left and batch == "delete table inet swg_reach\ndelete table inet swg_smart\n"
-      and all("--entrypoint nft ghcr.io/sanityprotocol/swg-node:sha-env" in c for c in log.splitlines() if c.startswith("docker run")), (out, log))
+      and all("--entrypoint nft ghcr.io/endlad2/swg-node:sha-env" in c for c in log.splitlines() if c.startswith("docker run")), (out, log))
 i_cap = U.find('  capture_adopted "$_acfg" "$DOCKER_DIR/data/node/adopted-containers.json"\n  rm -f "$_acfg"\n')
 i_sw = U.find('  _node_nft_sweep "$_ifn"             # stopped, its interfaces, then its nft tables')
 i_rm = U.find("  run sh -c 'docker rm -f swg-node >/dev/null 2>&1 || true'")
@@ -624,7 +624,7 @@ i_rm = first(calls, lambda c: c == "docker rm -f swg-node")
 check("[4b] the docker → bare switch: stopped, its interfaces deleted, THEN its tables in one batch by its own image, then the container removed",
       rc == 0 and "END" in out and 0 <= i_stop < min(i_if, i_if2) and max(i_if, i_if2) < i_batch < i_rm and not left
       and batch == "delete table inet swg_reach\ndelete table inet swg_smart\n"
-      and all("--net host" in c and "--cap-add NET_ADMIN" in c and "--entrypoint nft ghcr.io/sanityprotocol/swg-node:sha-test" in c
+      and all("--net host" in c and "--cap-add NET_ADMIN" in c and "--entrypoint nft ghcr.io/endlad2/swg-node:sha-test" in c
               for c in calls if c.startswith("docker run")), (rc, out, calls, batch, left))
 check("[4b] …when the host's own nft cannot read the ruleset (it crashes: no \"Segmentation fault\" line reaches the operator), said in one line; another program's table never",
       [l for l in out.splitlines() if l.startswith(("INFO", "WARN"))] == ["INFO this host's nft cannot read the Docker node's nft tables — "

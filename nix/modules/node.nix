@@ -140,9 +140,9 @@ in
 
     image = mkOption {
       type = types.str;
-      default = "ghcr.io/sanityprotocol/swg-node:latest";
+      default = "ghcr.io/endlad2/swg-node:latest";
       description = ''
-        The node image. **Pin it by digest** — `ghcr.io/sanityprotocol/swg-node@sha256:…` — if you
+        The node image. **Pin it by digest** — `ghcr.io/endlad2/swg-node@sha256:…` — if you
         want the container arm to give you what the store gives the native one: a `nixos-rebuild
         --rollback` that actually goes back to the code you were running. A moving tag does not.
       '';

@@ -74,7 +74,7 @@ def _urlopen(req, *a, **k):
 
 urllib.request.urlopen = _urlopen
 m._http_retry = lambda fn, **k: fn()
-m.REMOTE_VERSION_URL = "https://raw.githubusercontent.com/SanityProtocol/swg-panel/main/VERSION"
+m.REMOTE_VERSION_URL = "https://raw.githubusercontent.com/Endlad2/swg-panel/main/VERSION"
 m.REMOTE_CHANGELOG_URL = m.REMOTE_VERSION_URL.rsplit("/", 1)[0] + "/CHANGELOG.md"
 
 SECTION[0] = "[1]"

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Behavioural harness for the subscription page: the REAL sub.js, served by the REAL swg-sub, rendered by a REAL browser.
 
 Until this existed every sub-page fix was proven once, by hand, in a browser — and prevented nothing afterwards. Why a browser
@@ -174,20 +174,20 @@ if P_XXSUB:   # the app back in every WDTT fork's compat (the catalog before 202
 # [8] each server's own release, as _turn_warm_pins leaves it (csqtt's latest is our v2.5.1): csqtt 2.1.9-4 → our
 # csqtt-app-2.1.9 shown as v2.1.9, Dana's 2.5.1 → our csqtt-app-2.5.1 (v2.5.1), amurcanov's WDTT 1.2.4-3 → v1.2.4, the
 # hack-diaz proxies' v4.0.3 → its CLI release (which also carries an Android binary)
-PIN_APK = "https://github.com/Endlad2/swg-panelreleases/download/csqtt-app-2.1.9/CSQTT-universal.apk"
-PIN25_APK = "https://github.com/Endlad2/swg-panelreleases/download/csqtt-app-2.5.1/CSQTT-2.5.1-universal.apk"
+PIN_APK = "https://github.com/Endlad2/swg-panel/releases/download/csqtt-app-2.1.9/CSQTT-universal.apk"
+PIN25_APK = "https://github.com/Endlad2/swg-panel/releases/download/csqtt-app-2.5.1/CSQTT-2.5.1-universal.apk"
 WDTT_APK = "https://github.com/amurcanov/proxy-turn-vk-android/releases/download/v1.2.4/WDTT-universal.apk"
 CLI_LIN = "https://github.com/hackdiaz-dev/free-turn-proxy/releases/download/v4.0.3/client-linux-amd64"
 CLI_AND = "https://github.com/hackdiaz-dev/free-turn-proxy/releases/download/v4.0.3/client-android-arm64"
-P._RELEASE_INFO[("amurcanov", "csqtt")] = {"tag": "v2.5.1", "page": "https://github.com/Endlad2/swg-panelreleases/tag/csqtt-app-2.5.1",
+P._RELEASE_INFO[("amurcanov", "csqtt")] = {"tag": "v2.5.1", "page": "https://github.com/Endlad2/swg-panel/releases/tag/csqtt-app-2.5.1",
     "assets": [{"name": "CSQTT-2.5.1-universal.apk", "url": PIN25_APK}]}
 P._PLATFORM_ASSET[("amurcanov", "csqtt", "android")] = P._RELEASE_INFO[("amurcanov", "csqtt")]["assets"][0]["url"]
 def _pin(tag, page, urls):
     return {"tag": tag, "page": page, "assets": [{"name": u.rsplit("/", 1)[1], "url": u} for u in urls.values()], "url": urls}
-P._RELEASE_PIN[("amurcanov", "csqtt", "2.1.9-4")] = dict(_pin("v2.1.9", "https://github.com/Endlad2/swg-panelreleases/tag/csqtt-app-2.1.9", {"android": PIN_APK}),
-                                                         src="SanityProtocol/swg-panel@csqtt-app-2.1.9")
-P._RELEASE_PIN[("amurcanov", "csqtt", "2.5.1")] = dict(_pin("v2.5.1", "https://github.com/Endlad2/swg-panelreleases/tag/csqtt-app-2.5.1", {"android": PIN25_APK}),
-                                                       src="SanityProtocol/swg-panel@csqtt-app-2.5.1")
+P._RELEASE_PIN[("amurcanov", "csqtt", "2.1.9-4")] = dict(_pin("v2.1.9", "https://github.com/Endlad2/swg-panel/releases/tag/csqtt-app-2.1.9", {"android": PIN_APK}),
+                                                         src="Endlad2/swg-panel@csqtt-app-2.1.9")
+P._RELEASE_PIN[("amurcanov", "csqtt", "2.5.1")] = dict(_pin("v2.5.1", "https://github.com/Endlad2/swg-panel/releases/tag/csqtt-app-2.5.1", {"android": PIN25_APK}),
+                                                       src="Endlad2/swg-panel@csqtt-app-2.5.1")
 P._RELEASE_PIN[("amurcanov", "proxy-turn-vk-android", "1.2.4-3")] = _pin("v1.2.4", "https://github.com/amurcanov/proxy-turn-vk-android/releases/tag/v1.2.4", {"android": WDTT_APK})
 P._RELEASE_PIN[("hackdiaz-dev", "free-turn-proxy", "v4.0.3")] = _pin("v4.0.3", "https://github.com/hackdiaz-dev/free-turn-proxy/releases/tag/v4.0.3",
                                                                      {"linux": CLI_LIN, "android": CLI_AND})

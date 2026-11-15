@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # bootstrap.sh — fetch swg-panel from GitHub and run the right installer.
 #
-#   sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/SanityProtocol/swg-panel/main/bootstrap.sh)"
+#   sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/Endlad2/swg-panel/main/bootstrap.sh)"
 #       → interactive: pick installation method (bare-metal/docker) + role (master/host/node).
 #   sudo bash -c "$(curl …)" -- -key NODE_KEY -host https://PANEL   → add a node (a key implies node; asks method).
 #   sudo bash -c "$(curl …)" -- docker host                         → explicit method + role (skips the prompts).
@@ -52,7 +52,7 @@ SWG_ARGS=("$@")   # as given — the command the warning below hands back is bui
 # removed it (the shell stays "in" the deleted dir, getcwd() fails, and git/curl refuse to run).
 # Step into a guaranteed-present directory before doing anything.
 cd / 2>/dev/null || cd "${TMPDIR:-/tmp}" 2>/dev/null || true
-REPO="${SWG_REPO:-https://github.com/SanityProtocol/swg-panel}"
+REPO="${SWG_REPO:-https://github.com/Endlad2/swg-panel}"
 # Which ref to install. SWG_REF wins; otherwise INFER IT FROM THE URL WE WERE FETCHED FROM.
 # Without the inference, `SWG_BOOTSTRAP_URL=.../dev/bootstrap.sh | bash` fetched the dev bootstrap and
 # then installed `main` from it — a panel tracking a pre-release branch SILENTLY DOWNGRADED itself on
@@ -236,7 +236,7 @@ done
 # same arguments in the one form that works under sudo-rs and classic sudo alike (sudo's stdin is the terminal, not a pipe).
 if [ "$SWG_TTY" = /dev/null ] && { : </dev/tty; } 2>/dev/null; then
   _bs_url="<this bootstrap.sh URL>"
-  [ "$REPO" = https://github.com/SanityProtocol/swg-panel ] && _bs_url="https://raw.githubusercontent.com/SanityProtocol/swg-panel/${REF:-main}/bootstrap.sh"
+  [ "$REPO" = https://github.com/Endlad2/swg-panel ] && _bs_url="https://raw.githubusercontent.com/Endlad2/swg-panel/${REF:-main}/bootstrap.sh"
   # A ref other than main rides INSIDE the script string: sudo resets the environment, so SWG_REF in front of it would be
   # dropped, and the URL does not reach the script either — the dev bootstrap would install main (see _ref_from_url).
   _bs_pre=""; [ -n "${REF:-}" ] && [ "${REF:-}" != main ] && _bs_pre="SWG_REF=$(printf '%q' "$REF"); "

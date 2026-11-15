@@ -1,7 +1,7 @@
 # T-T1, container arm — everything about it that does NOT need the image.
 #
 # ⚠️ WHY THIS EXISTS SEPARATELY, and why it never starts a container. A nixosTest VM has no
-# internet, so it cannot pull ghcr.io/sanityprotocol/swg-node. Two obvious ways round that were
+# internet, so it cannot pull ghcr.io/endlad2/swg-node. Two obvious ways round that were
 # considered and REJECTED:
 #   · a dockerTools stand-in built from our own source — it would be a THIRD declaration of the
 #     image's contents beside the Dockerfile and the shipped-assets gate, it would rot silently,
@@ -119,7 +119,7 @@ in
             "SWG_NODE_PLATFORM",                    # T-P1: what OWNS the installation
             "SWG_DECLARATIVE",
             "SWG_UDP_PORTS",                        # T-P10: the declared firewall range
-            "ghcr.io/sanityprotocol/swg-node",
+            "ghcr.io/endlad2/swg-node",
         ]
         missing = [w for w in want if w not in body]
         assert not missing, f"the start script is missing: {missing}\\n---\\n{body}"

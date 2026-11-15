@@ -1,4 +1,4 @@
-﻿<p align="center"><a href="README.md">English</a> · <b>Русский</b></p>
+<p align="center"><a href="README.md">English</a> · <b>Русский</b></p>
 
 # swgPanel на NixOS
 
@@ -104,7 +104,7 @@ sudo nano /etc/nixos/flake.nix
 ```nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";   # ← ВАШ канал, из `nixos-version`
-  inputs.swg-panel.url = "github:SanityProtocol/swg-panel";
+  inputs.swg-panel.url = "github:Endlad2/swg-panel";
 
   outputs = { self, nixpkgs, swg-panel, ... }: {
     nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {    # ← ВАШЕ имя хоста
@@ -142,15 +142,15 @@ Nix читает из git-каталога только *отслеживаем�
 **Совсем без флейков?** Пакет доступен и по-старому, хотя примеры модулей ниже рассчитаны на флейк:
 
 ```nix
-(import (fetchTarball "https://github.com/Endlad2/swg-panelarchive/main.tar.gz"))
+(import (fetchTarball "https://github.com/Endlad2/swg-panel/archive/main.tar.gz"))
   .packages.x86_64-linux.default
 ```
 
 **Хотите сначала посмотреть, ничего не решая?** Эти команды не трогают машину:
 
 ```bash
-nix build github:SanityProtocol/swg-panel          # просто собирает пакет
-nix flake check github:SanityProtocol/swg-panel    # ⚠️ собирает две виртуалки NixOS — минуты, не секунды
+nix build github:Endlad2/swg-panel          # просто собирает пакет
+nix flake check github:Endlad2/swg-panel    # ⚠️ собирает две виртуалки NixOS — минуты, не секунды
 ```
 
 Чтобы собирать против **вашего** nixpkgs, а не нашего, добавьте оверлей в `configuration.nix`:

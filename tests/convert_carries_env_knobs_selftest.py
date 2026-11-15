@@ -151,7 +151,7 @@ def systemd_env(text):
     return out
 
 
-URL = "https://raw.githubusercontent.com/SanityProtocol/swg-panel/dev/VERSION"
+URL = "https://raw.githubusercontent.com/Endlad2/swg-panel/dev/VERSION"
 # [1a]
 r, sd, f, log = carry("a", "PANEL_DOMAIN=x\nSWG_LATEST_URL=%s   # follow dev\n" % URL, "swg-panel-server", "SWG_LATEST_URL")
 body = open(f).read() if os.path.exists(f) else ""
@@ -262,7 +262,7 @@ def dropins(label, files, *units):
     return r, (open(carryf).read() if os.path.exists(carryf) else None), park, sd
 
 
-URLD = "https://raw.githubusercontent.com/SanityProtocol/swg-panel/dev/VERSION"
+URLD = "https://raw.githubusercontent.com/Endlad2/swg-panel/dev/VERSION"
 LATEST = "[Service]\nEnvironment=SWG_LATEST_URL=%s \"OPS_NOTE=keep me\"\nNice=5\n" % URLD
 r, carried, park, sd = dropins("a", {"swg-panel-server.service.d/latest.conf": LATEST}, "swg-panel-server")
 check("[5a] SWG_LATEST_URL from an operator's drop-in → the carry file, as the .env reads it",
