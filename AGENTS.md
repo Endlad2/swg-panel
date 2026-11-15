@@ -127,9 +127,10 @@ Full guide, including both of the above in context: [nix/README.md](nix/README.m
 `GET /healthz` on the panel and on the subscription server is unauthenticated liveness — no data, no
 session. Use it as the readiness probe.
 
-Everything else under `/api/` requires a session; **`401` is the healthy answer** for an unauthenticated
-caller. Treat `401` from `/api/state` as "the panel is up and auth is on", not as a failure. A `200`
-there without credentials means authentication is not configured — that is the thing to alarm on.
+Everything else under `/api/` requires an admin session/Basic login **or** a Settings → Integrations token with
+`Full management` scope; **`401` is the healthy answer** for a caller with no credentials. A read-only API token gets
+`403` on operator routes. Treat `401` from `/api/state` as "the panel is up and auth is on", not as a failure. A `200`
+there without any credentials means authentication is not configured — that is the thing to alarm on.
 
 A node's own health is local: `systemctl is-active swg-noded` (bare-metal / native) or
 `docker ps` / `podman ps` (container). It logs a reconcile line every interval.

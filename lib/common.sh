@@ -1,4 +1,4 @@
-# swg-panel — shared installer helpers (sourced by install-host/node/docker.sh + convert.sh).
+﻿# swg-panel — shared installer helpers (sourced by install-host/node/docker.sh + convert.sh).
 # Pure, stateless helpers that were byte-identical across the installers. Functions that depend on
 # per-script state (port_free, v_host/v_port, have) are CALLED here but defined by the sourcing script,
 # so behaviour is unchanged. Keep only provably-identical helpers here; don't add drifted ones.
@@ -2781,7 +2781,7 @@ awg_go_pinned(){ # fetch the pinned amneziawg-go, verify its sha256, install it.
   case "$(uname -m)" in x86_64|amd64) arch=amd64 ;; aarch64|arm64) arch=arm64 ;; *) return 1 ;; esac
   eval "sha=\${AWG_GO_SHA256_$arch:-}"
   [ -n "$sha" ] || return 1
-  url="https://github.com/SanityProtocol/swg-panel/releases/download/$AWG_GO_TAG/amneziawg-go-linux-$arch"
+  url="https://github.com/Endlad2/swg-panelreleases/download/$AWG_GO_TAG/amneziawg-go-linux-$arch"
   $DRYRUN && { echo "    [skip] fetch + verify $url"; return 0; }
   have curl && have sha256sum || return 1
   tmp="$(mktemp)"

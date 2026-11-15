@@ -624,12 +624,14 @@ export function WebhookSheet({ hook, onSaved, onClose }) {
   <//>`;
 }
 
-// Settings → Integrations: the read-only external API (tokens + Prometheus) and outbound webhooks. All actions
-// persist immediately via dedicated endpoints (outside the batched Save), mirrored optimistically into Store.
+// Settings → Integrations: scoped external API tokens (read-only monitoring OR full operator management) + webhooks.
+// Full-management tokens authenticate the same /api/* routes the SPA uses; there is deliberately no second mutation API.
+// All token/webhook actions persist immediately via dedicated endpoints (outside the batched Save), mirrored optimistically.
 export function IntegrationsSettings() {
   const cfg = () => ((Store.panelSettings || {}).api) || { enabled: false, tokens: [], webhooks: [] };
   const [label, setLabel] = useState("");
-  const [minted, setMinted] = useState(null);               // {label, token} — revealed once after minting
+  const [scope, setScope] = useState("manage");
+  const [minted, setMinted] = useState(null);               // {label, token, scope} — revealed once after minting
   const [busy, setBusy] = useState(false);
   const c = cfg();
   const baseUrl = `${location.origin}${BASE}`;
@@ -637,12 +639,12 @@ export function IntegrationsSettings() {
   const setEnabled = async v => { optimistic({ ...cfg(), enabled: v }); const r = await api.panelSettings({ api_enabled: v }); if (r && r.ok === false) toast(srvText(r) || T("Failed"), "err"); };
   const mint = async () => {
     setBusy(true);
-    const r = await api.apiTokenCreate(label.trim());
+    const r = await api.apiTokenCreate(label.trim(), scope);
     setBusy(false);
     if (!r.ok) return toast(srvText(r) || T("Failed to create token"), "err");
-    setMinted({ label: r.data.label, token: r.data.token });
+    setMinted({ label: r.data.label, token: r.data.token, scope: r.data.scope || "read" });
     setLabel("");
-    optimistic({ ...cfg(), enabled: true, tokens: [...(cfg().tokens || []), { id: r.data.id, label: r.data.label, created: r.data.created, last_used: null }] });
+    optimistic({ ...cfg(), enabled: true, tokens: [...(cfg().tokens || []), { id: r.data.id, label: r.data.label, scope: r.data.scope || "read", created: r.data.created, last_used: null }] });
   };
   const revoke = t => openConfirm({ title: T("Revoke API token"), confirmLabel: T("Revoke"), danger: true,
     body: Trich("Revoke *{label}*? Any integration still using it stops working immediately.", { label: t.label }),
@@ -655,19 +657,23 @@ export function IntegrationsSettings() {
   return html`<div class="card">
     <div class="seclabel turnhead" style="margin-top:0">${T("External API")}<span class="grow"></span>
       <${Switch} on=${c.enabled === true} title=${c.enabled ? T("API on — tokens are accepted") : T("API off — all tokens are rejected")} onChange=${setEnabled}/></div>
-    <p class="hint" style="margin:0 0 12px">${Trich("A *read-only* REST + Prometheus surface for external monitoring and automation — Grafana, Uptime Kuma, Prometheus, Terraform/Ansible. No token can ever change the fleet. Authenticate with a bearer token below; `/healthz` and `/api/v1/health` stay open as liveness probes.")}</p>
+    <p class="hint" style="margin:0 0 12px">${Trich("Issue either a *read-only* token for monitoring (`/api/v1/*`, Prometheus), or a *full management* token that can call the same operator `/api/*` endpoints as this panel — users, peers, nodes, subscriptions, settings and other actions. Authenticate with `Authorization: Bearer …` or `X-API-Key`; `/healthz` and `/api/v1/health` stay open as liveness probes.")}</p>
     ${c.enabled !== true ? html`<div class="notice warn"><${Ic} i="warn"/><span>${Trich("The API is *off* — endpoints return 401. Minting a token turns it on, or flip the switch above.")}</span></div>` : null}
 
     <div class="seclabel">${T("Access tokens")}</div>
-    <div class="tok-add"><input value=${label} onInput=${e => setLabel(e.target.value)} placeholder=${T("Label (e.g. grafana, prometheus)")} spellcheck="false" onKeyDown=${e => { if (e.key === "Enter") mint(); }}/>
+    <div class="tok-add"><input value=${label} onInput=${e => setLabel(e.target.value)} placeholder=${T("Label (e.g. automation, grafana)")} spellcheck="false" onKeyDown=${e => { if (e.key === "Enter") mint(); }}/>
+      <${Dropdown} className="tok-scope" value=${scope} onChange=${setScope} ariaLabel=${T("Token permissions")} options=${[
+        { value: "manage", label: T("Full management") }, { value: "read", label: T("Read-only") },
+      ]}/>
       <button class="btn btn-primary" disabled=${busy} onClick=${mint}><span class="plus"><${Ic} i="plus"/></span> ${T("Create token")}</button></div>
-    ${minted ? html`<div class="notice ok"><${Ic} i="check"/><span>${Trich("New token *{label}* — copy it now, it won't be shown again.", { label: minted.label })}</span></div>
+    ${scope === "manage" ? html`<div class="notice warn"><${Ic} i="warn"/><span>${T("A full-management token is equivalent to an administrator for the operator API. Keep it secret and revoke it when the integration no longer needs access.")}</span></div>` : null}
+    ${minted ? html`<div class="notice ok"><${Ic} i="check"/><span>${Trich("New *{scope}* token *{label}* — copy it now, it won't be shown again.", { scope: minted.scope === "manage" ? T("full-management") : T("read-only"), label: minted.label })}</span></div>
       <div class="tokreveal"><code class="tokval">${minted.token}</code><button class="btn btn-mini" onClick=${() => copy(minted.token, T("Token"))}><${Ic} i="copy"/> ${T("Copy")}</button><button class="btn btn-mini btn-ghost" onClick=${() => setMinted(null)}>${T("Dismiss")}</button></div>` : null}
     ${(c.tokens || []).length ? html`<div class="toklist">${c.tokens.map(t => html`<div class="tokrow" key=${t.id}>
       <div class="tokrow-main"><span class="tokrow-label">${t.label}</span>
-        <span class="tokrow-meta">${T("created {v1}", { v1: ago(t.created) })}${t.last_used ? T(" · last used {v1}", { v1: ago(t.last_used) }) : T(" · never used")}</span></div>
+        <span class="tokrow-meta">${t.scope === "manage" ? T("Full management") : T("Read-only")} · ${T("created {v1}", { v1: ago(t.created) })}${t.last_used ? T(" · last used {v1}", { v1: ago(t.last_used) }) : T(" · never used")}</span></div>
       <button class="btn btn-mini btn-danger" onClick=${() => revoke(t)}><${Ic} i="trash"/> ${T("Revoke")}</button></div>`)}</div>`
-      : html`<p class="hint" style="margin:2px 0 0">${T("No tokens yet — create one to let an external system read the fleet.")}</p>`}
+      : html`<p class="hint" style="margin:2px 0 0">${T("No tokens yet — create a read-only monitoring token or a full-management automation token.")}</p>`}
 
     <div class="seclabel">${T("Webhooks")}</div>
     <p class="hint" style="margin:0 0 10px">${T("The panel POSTs a signed JSON body to your endpoint when a peer is added/removed or a node goes online/offline. Use them for alerting or automation.")}</p>
@@ -680,7 +686,13 @@ export function IntegrationsSettings() {
     <div style="margin-top:10px"><button class="btn btn-ghost" onClick=${() => editHook(null)}><${Ic} i="plus"/> ${T("Add webhook")}</button></div>
 
     <div class="seclabel">${T("Endpoints")}</div>
+    <p class="hint" style="margin:0 0 8px">${T("Full-management tokens can call every authenticated operator endpoint used by the panel. Common automation calls:")}</p>
     <div class="apiendpoints">
+      <div class="apiep"><span class="apiep-m">GET</span><span class="mono">/api/state</span><span class="apiep-d">${T("full panel state")}</span></div>
+      <div class="apiep"><span class="apiep-m">POST</span><span class="mono">/api/users/create</span><span class="apiep-d">${T("create a user")}</span></div>
+      <div class="apiep"><span class="apiep-m">POST</span><span class="mono">/api/peers/create</span><span class="apiep-d">${T("create and deploy a peer")}</span></div>
+      <div class="apiep"><span class="apiep-m">GET</span><span class="mono">/api/sub/users</span><span class="apiep-d">${T("subscription status and escrow")}</span></div>
+      <div class="apiep"><span class="apiep-m">POST</span><span class="mono">/api/panel/settings</span><span class="apiep-d">${T("update panel settings")}</span></div>
       <div class="apiep"><span class="apiep-m">GET</span><span class="mono">/api/v1/health</span><span class="apiep-d">${T("liveness + counts (no auth)")}</span></div>
       <div class="apiep"><span class="apiep-m">GET</span><span class="mono">/metrics</span><span class="apiep-d">${T("Prometheus exposition")}</span></div>
       <div class="apiep"><span class="apiep-m">GET</span><span class="mono">/api/v1/servers</span><span class="apiep-d">${T("nodes with status + counts")}</span></div>
@@ -688,8 +700,8 @@ export function IntegrationsSettings() {
       <div class="apiep"><span class="apiep-m">GET</span><span class="mono">/api/v1/peers</span><span class="apiep-d">${T("all peers, per-node presence")}</span></div>
       <div class="apiep"><span class="apiep-m">GET</span><span class="mono">/api/v1/summary</span><span class="apiep-d">${T("fleet totals")}</span></div>
     </div>
-    <div class="apisnip"><div class="apisnip-h">${T("Test it")}<button class="btn btn-mini" onClick=${() => copy(`curl -H 'Authorization: Bearer <token>' ${baseUrl}/api/v1/servers`, T("Command"))}><${Ic} i="copy"/> ${T("Copy")}</button></div>
-      <code class="apisnip-c">${`curl -H 'Authorization: Bearer <token>' ${baseUrl}/api/v1/servers`}</code></div>
+    <div class="apisnip"><div class="apisnip-h">${T("Management example")}<button class="btn btn-mini" onClick=${() => copy(`curl -H 'Authorization: Bearer <token>' -H 'Content-Type: application/json' -d '{"name":"Alice"}' ${baseUrl}/api/users/create`, T("Command"))}><${Ic} i="copy"/> ${T("Copy")}</button></div>
+      <code class="apisnip-c">${`curl -H 'Authorization: Bearer <token>' -H 'Content-Type: application/json' -d '{"name":"Alice"}' ${baseUrl}/api/users/create`}</code></div>
     <div class="apisnip"><div class="apisnip-h">${T("Prometheus scrape config")}<button class="btn btn-mini" onClick=${() => copy(`scrape_configs:\n  - job_name: swg-panel\n    metrics_path: /metrics\n    scheme: ${location.protocol.replace(":", "")}\n    authorization:\n      credentials: <token>\n    static_configs:\n      - targets: ['${location.host}${BASE}']`, T("Scrape config"))}><${Ic} i="copy"/>${T("Copy")}</button></div>
       <code class="apisnip-c">${`scrape_configs:\n  - job_name: swg-panel\n    metrics_path: /metrics\n    authorization:\n      credentials: <token>\n    static_configs:\n      - targets: ['${location.host}${BASE}']`}</code></div>
   </div>`;

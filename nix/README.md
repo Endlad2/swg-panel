@@ -1,4 +1,4 @@
-<p align="center"><b>English</b> · <a href="README.ru.md">Русский</a></p>
+﻿<p align="center"><b>English</b> · <a href="README.ru.md">Русский</a></p>
 
 # swgPanel on NixOS
 
@@ -139,7 +139,7 @@ You do not have to touch `/etc/nixos/configuration.nix` again — the flake pull
 below assume a flake:
 
 ```nix
-(import (fetchTarball "https://github.com/SanityProtocol/swg-panel/archive/main.tar.gz"))
+(import (fetchTarball "https://github.com/Endlad2/swg-panelarchive/main.tar.gz"))
   .packages.x86_64-linux.default
 ```
 

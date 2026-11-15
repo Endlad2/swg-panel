@@ -618,7 +618,7 @@ sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/SanityProtocol/swg-
 
 - **[Technical guide](README.technical.md)** — architecture, every install option and flag,
   Docker by hand, converting, smart routing, backups & security, and troubleshooting.
-- **[External API](API.md)** — the read-only REST surface, Prometheus metrics and webhooks.
+- **[External API](API.md)** — read-only monitoring + Prometheus/webhooks, with optional full-management API tokens for the same operator endpoints used by the panel.
 - **[NixOS](nix/README.md)** — the flake, both delivery methods, and moving a server you already run onto it.
 - **[For LLM agents](AGENTS.md)** — the unattended contract: the environment variable for every prompt,
   health probes that need no credentials, and the handful of things an agent must never touch.

@@ -2,43 +2,102 @@
 
 ---
 
-# External Integration API
+# External Integration & Management API
 
-A **read-only** REST + Prometheus surface plus outbound **webhooks**, for wiring swg-panel into
-external monitoring and automation — Grafana, Uptime Kuma, Prometheus, Terraform/Ansible, or your
-own scripts. It exposes state the panel already collects from node syncs; it never changes the fleet.
+swg-panel exposes two API-token scopes from **Settings → Integrations**:
 
-- **Read-only.** No API token is accepted on any mutating endpoint. A leaked token can observe, never modify.
-- **Panel-only.** Nodes are untouched — they sync exactly as before. The panel serves the API from the
-  same in-memory snapshots + roster it already keeps. No extra load on nodes, no change to the sync loop.
-- **Cheap.** Off the SPA's poll path; the whole-fleet view is cached ~3s and shared by every endpoint and
-  scrape, so an aggressive Prometheus/Grafana setup can't degrade the panel.
+- **Read-only** — the existing `/api/v1/*` monitoring surface and `/metrics`. It cannot mutate the fleet.
+- **Full management** — everything above, plus the same authenticated operator `/api/*` endpoints the SPA uses.
+  User, peer, node, subscription, routing, interface and settings operations therefore run through the panel's real
+  validation, locking, event log and node-reconcile side effects instead of a second implementation.
 
-Enable it in **Settings → Integrations**: mint a token (shown once), optionally add webhooks.
+The raw `swgp_…` token is shown once; only its SHA-256 hash and scope are stored. Tokens minted before scope support
+remain **read-only**. Turning the API off rejects all API tokens immediately.
+
+The read-only monitoring view is still cached for ~3 seconds and does not add node polling. Management calls are not
+served from that cache: they execute the ordinary operator API exactly as the panel does.
 
 ## Contents
 
 - [Authentication](#authentication)
-- [Endpoints](#endpoints)
+- [Management API](#management-api)
+- [Monitoring endpoints](#monitoring-endpoints)
 - [Webhooks](#webhooks)
 - [Examples](#examples)
 
 ## Authentication
 
-Every endpoint except the liveness probes needs a token, sent one of three ways:
+Use either header for both scopes:
 
-| where | how to send it | when to use it |
+| header | value |
+|---|---|
+| `Authorization` | `Bearer <token>` |
+| `X-API-Key` | `<token>` |
+
+The query form `?token=<token>` is accepted **only by the read-only monitoring surface** for legacy tools that cannot
+set headers. Full-management authentication is header-only so an administrator-equivalent secret does not leak into
+URLs, proxy access logs or browser history. An admin session cookie / HTTP Basic login also continues to authenticate
+the ordinary operator API.
+
+`GET /healthz` and `GET /api/v1/health` are unauthenticated liveness probes and expose no secrets.
+
+## Management API
+
+A token created with **Full management** scope can call the existing operator API under `/api/*`. Responses and request
+bodies are the same ones used by the SPA, so existing automation can use the panel directly without a parallel CRUD
+layer. A read-only token presented to an operator endpoint gets `403` with code `read_only_token`; an invalid/disabled
+token gets `401`.
+
+Common routes:
+
+| method | path | purpose |
 |---|---|---|
-| header | `Authorization: Bearer <token>` | the default |
-| header | `X-API-Key: <token>` | tools that reserve `Authorization` for their own auth |
-| query | `?token=<token>` | tools that cannot set a header at all |
+| `GET` | `/api/state` | full panel state used by the SPA |
+| `GET` | `/api/roster` | users, peers and groups roster |
+| `POST` | `/api/users/create` | create a user (`{"name":"Alice","tag":"","note":""}`) |
+| `POST` | `/api/users/update` / `/api/users/delete` | update / delete a user |
+| `GET` | `/api/next-ip?nodes=<id>&iface=<name>` | ask the panel for the next client address |
+| `POST` | `/api/peers/create` | create and deploy a peer to one or more targets |
+| `POST` | `/api/peers/update`, `/api/peers/add-target`, `/api/peers/remove-target` | manage peer deployment |
+| `POST` | `/api/peers/unassign`, `/api/peers/rekey`, `/api/peers/delete` | ownership / credential lifecycle |
+| `GET` | `/api/sub/users` | subscription status + encrypted escrow metadata |
+| `POST` | `/api/sub/user/enable`, `/rotate`, `/disable` | subscription lifecycle (same encrypted payloads as the SPA) |
+| `GET` / `POST` | `/api/nodes`, `/api/nodes/create`, `/api/nodes/update`, … | node management |
+| `POST` | `/api/panel/settings` | panel settings |
+| `POST` | `/api/iface/*`, `/api/turn/*`, `/api/routing/*`, `/api/access/*` | the same operational controls exposed by the UI |
 
-Tokens are minted in the UI (`swgp_…`); only a SHA-256 hash is stored. An admin session cookie also
-authenticates (so the settings page can preview). Turning the API **off** rejects all tokens immediately.
+Because subscription secrets are intentionally generated/encrypted in the browser, the panel does **not** keep the raw
+subscription token. `GET /api/sub/users` can list subscription state, but it cannot reveal an existing raw subscription
+URL. Enabling/rotating through the operator API therefore requires the same `token_sha`, `token_by_sk` and escrow
+material that the SPA supplies. This preserves the project's existing no-plaintext-subscription-secret design.
 
-`GET /healthz` and `GET /api/v1/health` are **unauthenticated** liveness probes and expose no secrets.
+### Management examples
 
-## Endpoints
+Create a user:
+
+```bash
+curl -sS -H 'Authorization: Bearer swgp_…' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Alice","tag":"team-a"}' \
+  https://panel.example.com/api/users/create | jq
+```
+
+Read the authoritative roster:
+
+```bash
+curl -sS -H 'X-API-Key: swgp_…' https://panel.example.com/api/roster | jq
+```
+
+Create a peer after obtaining a node/interface and a free address:
+
+```bash
+curl -sS -H 'Authorization: Bearer swgp_…' \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id":"u_…","pubkey":"<client-public-key>","targets":[{"node":"node-id","iface":"awg0","ip":"10.8.0.10"}]}' \
+  https://panel.example.com/api/peers/create | jq
+```
+
+## Monitoring endpoints
 
 ### `GET /healthz`
 Plain-text `ok` — for uptime probes / load balancers. No auth.
@@ -193,5 +252,4 @@ scrape_configs:
 
 Uptime Kuma: add an **HTTP(s) - Keyword** monitor on `/api/v1/health`, keyword `"ok"`.
 
-Terraform/Ansible: read `/api/v1/servers` and `/api/v1/peers` to discover fleet state for inventory or
-drift checks (the API is read-only — provision through the panel UI/roster).
+Terraform/Ansible: use a read-only token for inventory/drift checks, or a Full management token when the automation must provision or change the fleet through the same operator API as the panel UI.

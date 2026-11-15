@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Self-test — bootstrap.sh fetches a COMMIT, because that is how a release is named.
 
 Panel releases carry no git tag: each is one squashed commit on main. After the next release, going back to the
@@ -82,7 +82,7 @@ print("[1] a release's commit comes from GitHub's archive of that commit")
 for ref in ("df3bb45", "df3bb458fa2855c72970441ada9e7f722dcd9d52"):
     p, calls = run(ref)
     check("%s → curl %s/archive/%s.tar.gz, never `git clone --branch`" % (ref[:12], "…", ref[:12]),
-          "curl -fsSL https://github.com/SanityProtocol/swg-panel/archive/%s.tar.gz" % ref in calls
+          "curl -fsSL https://github.com/Endlad2/swg-panelarchive/%s.tar.gz" % ref in calls
           and "git clone" not in calls, calls)
     check("%s → fetched, and the tree lands at $TMP/swg-panel" % ref[:12],
           "FETCHED=tar" in p.stdout and re.search(r"^swg-panel$", p.stdout, re.M), (p.stdout, p.stderr))

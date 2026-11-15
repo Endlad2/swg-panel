@@ -1315,22 +1315,37 @@ export const STR = {
   "Revoke *{label}*? Any integration still using it stops working immediately.":
     "Отозвать *{label}*? Любая интеграция, которая им пользуется, сразу перестанет работать.",
   "External API": "Внешний API",
-  "A *read-only* REST + Prometheus surface for external monitoring and automation — Grafana, Uptime Kuma, Prometheus, Terraform/Ansible. No token can ever change the fleet. Authenticate with a bearer token below; `/healthz` and `/api/v1/health` stay open as liveness probes.":
-    "Интерфейс *только для чтения*: REST и Prometheus для внешнего мониторинга и автоматизации — Grafana, Uptime Kuma, Prometheus, Terraform/Ansible. Никакой токен не может изменить флот. Авторизация — bearer-токеном ниже; `/healthz` и `/api/v1/health` остаются открытыми как пробы живости.",
+  "Issue either a *read-only* token for monitoring (`/api/v1/*`, Prometheus), or a *full management* token that can call the same operator `/api/*` endpoints as this panel — users, peers, nodes, subscriptions, settings and other actions. Authenticate with `Authorization: Bearer …` or `X-API-Key`; `/healthz` and `/api/v1/health` stay open as liveness probes.":
+    "Выпустите либо токен *только для чтения* для мониторинга (`/api/v1/*`, Prometheus), либо токен *полного управления*, который может вызывать те же операторские `/api/*` эндпоинты, что и панель: пользователи, пиры, ноды, подписки, настройки и другие действия. Авторизация — `Authorization: Bearer …` или `X-API-Key`; `/healthz` и `/api/v1/health` остаются открытыми как пробы живости.",
   "The API is *off* — endpoints return 401. Minting a token turns it on, or flip the switch above.":
     "API *выключен* — эндпоинты отвечают 401. Выпуск токена включит его, либо переключите тумблер выше.",
   "Access tokens": "Токены доступа",
-  "Label (e.g. grafana, prometheus)": "Метка (например grafana, prometheus)",
+  "Label (e.g. automation, grafana)": "Метка (например automation, grafana)",
   "Create token": "Создать токен",
-  "New token *{label}* — copy it now, it won't be shown again.": "Новый токен *{label}* — скопируйте сейчас, больше он не покажется.",
+  "Token permissions": "Права токена",
+  "Full management": "Полное управление",
+  "Read-only": "Только чтение",
+  "A full-management token is equivalent to an administrator for the operator API. Keep it secret and revoke it when the integration no longer needs access.":
+    "Токен полного управления равнозначен администратору для операторского API. Храните его как секрет и отзывайте, когда интеграции больше не нужен доступ.",
+  "New *{scope}* token *{label}* — copy it now, it won't be shown again.": "Новый токен *{label}* ({scope}) — скопируйте сейчас, больше он не покажется.",
+  "full-management": "полное управление",
+  "read-only": "только чтение",
   "Token": "Токен",
-  "No tokens yet — create one to let an external system read the fleet.": "Токенов пока нет — создайте, чтобы внешняя система могла читать состояние флота.",
+  "No tokens yet — create a read-only monitoring token or a full-management automation token.": "Токенов пока нет — создайте токен только для чтения или токен полного управления для автоматизации.",
   "Webhooks": "Вебхуки",
   // budget-ok: button tooltip, no box
   "Send a test ping": "Отправить тестовый пинг",
   // budget-ok: button in a webhook row, row wraps
   "Test": "Проверить",
   "Endpoints": "Эндпоинты",
+  "Full-management tokens can call every authenticated operator endpoint used by the panel. Common automation calls:":
+    "Токены полного управления могут вызывать любой авторизованный операторский эндпоинт, которым пользуется панель. Частые вызовы для автоматизации:",
+  "full panel state": "полное состояние панели",
+  "create a user": "создать пользователя",
+  "create and deploy a peer": "создать и развернуть пир",
+  "subscription status and escrow": "состояние подписок и escrow",
+  "update panel settings": "изменить настройки панели",
+  "Management example": "Пример управления",
   // budget-ok: endpoint description cell, wraps
   "liveness + counts (no auth)": "живость и счётчики (без авторизации)",
   "Prometheus exposition": "экспозиция Prometheus",

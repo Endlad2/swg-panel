@@ -151,8 +151,8 @@ export const api = {
   purgePlaintext(b) { return this.post("/api/config/purge-plaintext", b || {}); },   // migration: delete legacy plaintext where a blob exists
   plaintextPeers() { return this.get("/api/config/plaintext-peers"); },   // migration: exactly which peers still hold plaintext (+ orphan count)
   refreshGeo() { return this.post("/api/panel/refresh-geo", {}); },
-  // external integration API (Settings → Integrations): read-only tokens + webhooks
-  apiTokenCreate(label) { return this.post("/api/integrations/token", { label }); },
+  // external integration API (Settings → Integrations): scoped read/manage tokens + webhooks
+  apiTokenCreate(label, scope) { return this.post("/api/integrations/token", { label, scope: scope || "read" }); },
   apiTokenRevoke(id) { return this.post("/api/integrations/token/revoke", { id }); },
   apiWebhookSave(b) { return this.post("/api/integrations/webhook", b); },
   apiWebhookDelete(id) { return this.post("/api/integrations/webhook/delete", { id }); },

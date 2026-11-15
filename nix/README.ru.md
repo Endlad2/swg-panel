@@ -1,4 +1,4 @@
-<p align="center"><a href="README.md">English</a> · <b>Русский</b></p>
+﻿<p align="center"><a href="README.md">English</a> · <b>Русский</b></p>
 
 # swgPanel на NixOS
 
@@ -142,7 +142,7 @@ Nix читает из git-каталога только *отслеживаем�
 **Совсем без флейков?** Пакет доступен и по-старому, хотя примеры модулей ниже рассчитаны на флейк:
 
 ```nix
-(import (fetchTarball "https://github.com/SanityProtocol/swg-panel/archive/main.tar.gz"))
+(import (fetchTarball "https://github.com/Endlad2/swg-panelarchive/main.tar.gz"))
   .packages.x86_64-linux.default
 ```
 

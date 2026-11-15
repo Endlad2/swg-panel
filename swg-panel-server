@@ -19047,9 +19047,10 @@ PANEL_SETTINGS_DEFAULTS = {
     # chosen cadence the panel resolves each deployed fork's latest release and stages a reinstall on any node
     # running an older build (the node re-downloads + restarts on its next sync). 0 = manual updates only.
     "turn_update": {"every_days": 0, "at": "04:00"},
-    # external integration API (read-only REST + Prometheus + webhooks). enabled=off until the operator mints a
-    # token in Settings → Integrations. tokens store only a sha256 HASH (raw shown once). webhooks POST a signed
-    # JSON body on peer.added/peer.removed/node.online/node.offline. See docs/API.md.
+    # external integration API (read-only monitoring + optional full management tokens + Prometheus + webhooks).
+    # enabled=off until the operator mints a token in Settings → Integrations. Tokens store only a sha256 HASH
+    # (raw shown once) and a scope: legacy/unspecified tokens are read-only; `manage` tokens may authenticate the
+    # same operator /api/* routes the SPA uses. Webhooks POST a signed JSON body. See API.md.
     "api": {"enabled": False, "tokens": [], "webhooks": []},
     # per-user shareable subscription pages (served by swg-sub). OFF by default after install — the whole public
     # surface 404s until the operator turns it on in Settings → Subscriptions and sets up the encryption vault.
@@ -27608,19 +27609,23 @@ def api(method, path, qs, body, deps):
         with contextlib.suppress(Exception):
             save_critical(deps.get("panel_settings_path") or "", json.dumps(cur, indent=2) + "\n")
 
-    if method == "POST" and path == "/api/integrations/token":       # mint a read-only token (raw shown once)
+    if method == "POST" and path == "/api/integrations/token":       # mint a scoped token (raw shown once)
         label = str(body.get("label") or "").strip()[:60] or "integration"
+        scope = str(body.get("scope") or "read").strip().lower()
+        if scope not in ("read", "manage"):
+            return 400, {"ok": False, "error": "scope must be 'read' or 'manage'", "code": "bad_request"}
         raw = API_TOKEN_PREFIX + secrets.token_hex(24)
         cur = dict(deps.get("panel_settings") or {})
         a = dict(cur.get("api") or {})
         toks = list(a.get("tokens") or [])
         tid = gen_id()
-        rec = {"id": tid, "label": label, "hash": _api_token_hash(raw), "created": now()}
+        rec = {"id": tid, "label": label, "scope": scope, "hash": _api_token_hash(raw), "created": now()}
         toks.append(rec)
         a["tokens"] = toks; a["enabled"] = True                       # minting a token turns the API on
         cur["api"] = a; _save_api(cur)
-        ev_append(roster_path, "panel", "integrations", "Created API token", label)
-        return 200, {"ok": True, "data": {"id": tid, "label": label, "created": rec["created"], "token": raw}}
+        ev_append(roster_path, "panel", "integrations", "Created API token", label, scope)
+        return 200, {"ok": True, "data": {"id": tid, "label": label, "scope": scope,
+                                                  "created": rec["created"], "token": raw}}
 
     if method == "POST" and path == "/api/integrations/token/revoke":
         tid = str(body.get("id") or "")
@@ -33150,11 +33155,10 @@ def api(method, path, qs, body, deps):
 
 
 # ───────────────────────── external integration API (v1) ─────────────────────────
-# A READ-ONLY REST surface + Prometheus /metrics + outbound webhooks so external systems
-# (Grafana, Uptime Kuma, Prometheus, Terraform/Ansible) can observe the fleet. Nothing here
-# mutates state: no API token is ever accepted on a POST mutation, so a leaked token can read
-# but never change anything. Auth is a bearer API token (Settings → Integrations mints them;
-# only the sha256 hash is stored) OR a normal admin session (so the settings page can preview).
+# The stable /api/v1 monitoring surface + Prometheus /metrics stays read-only. Settings → Integrations can mint
+# either a read-only token (the historical behaviour) or a `manage` token. A manage token additionally authenticates
+# the SAME operator /api/* GET/POST routes the SPA uses, so automation gets the panel's real validation, locking,
+# event log and side-effects instead of a second implementation that can drift. Only the sha256 token hash is stored.
 # /healthz and /api/v1/health are unauthenticated liveness probes that expose no secrets.
 
 API_TOKEN_PREFIX = "swgp_"
@@ -33170,9 +33174,15 @@ def _api_settings(deps):
     return a if isinstance(a, dict) else {}
 
 
-def api_token_lookup(deps, tok):
+def api_token_scope(rec):
+    """Normalized token scope. Tokens minted before scopes existed stay read-only by default."""
+    return "manage" if isinstance(rec, dict) and rec.get("scope") == "manage" else "read"
+
+
+def api_token_lookup(deps, tok, scope=None):
     """The stored token record matching a presented raw token, or None. Constant-time compare;
-    returns None when the API is disabled so a stale token stops working the moment it's turned off."""
+    returns None when the API is disabled so a stale token stops working the moment it's turned off.
+    `scope="manage"` additionally requires a full-management token; read endpoints accept either scope."""
     tok = (tok or "").strip()
     if not tok:
         return None
@@ -33184,6 +33194,8 @@ def api_token_lookup(deps, tok):
     for t in (a.get("tokens") or []):
         if hmac.compare_digest(str(t.get("hash", "")), h):
             hit = t
+    if hit is not None and scope == "manage" and api_token_scope(hit) != "manage":
+        return None
     return hit
 
 
@@ -33193,8 +33205,9 @@ def _api_public_view(deps):
     a = _api_settings(deps)
     seen = deps.get("api_seen") or {}
     return {"enabled": bool(a.get("enabled")),
-            "tokens": [{"id": t.get("id"), "label": t.get("label"), "created": t.get("created"),
-                        "last_used": seen.get(t.get("hash"))} for t in (a.get("tokens") or [])],
+            "tokens": [{"id": t.get("id"), "label": t.get("label"), "scope": api_token_scope(t),
+                        "created": t.get("created"), "last_used": seen.get(t.get("hash"))}
+                       for t in (a.get("tokens") or [])],
             "webhooks": [{"id": w.get("id"), "url": w.get("url"), "events": w.get("events") or [],
                           "enabled": w.get("enabled", True) is not False, "has_secret": bool(w.get("secret"))}
                          for w in (a.get("webhooks") or [])]}
@@ -33714,21 +33727,30 @@ class Handler(BaseHTTPRequestHandler):
         with contextlib.suppress(BrokenPipeError, ConnectionError):
             self.wfile.write(payload)
 
-    def _ext_token(self, u):
+    def _api_header_token(self):
+        """API token from a header only. Management auth deliberately never accepts query-string secrets."""
         hdr = self.headers.get("Authorization", "")
         if hdr.startswith("Bearer "):
             return hdr[7:].strip()
         xk = self.headers.get("X-API-Key", "")
-        if xk:
-            return xk.strip()
-        return (parse_qs(u.query).get("token") or [""])[0]   # ?token= for tools that can't set a header
+        return xk.strip() if xk else ""
+
+    def _ext_token(self, u):
+        tok = self._api_header_token()
+        if tok:
+            return tok
+        return (parse_qs(u.query).get("token") or [""])[0]   # ?token= only for read-only monitoring tools
+
+    def _mark_api_used(self, tok):
+        if tok:
+            self.deps.setdefault("api_seen", {})[_api_token_hash(tok.strip())] = int(time.time())
 
     def _ext_authed(self, u):
-        """A valid read-only API token (header or ?token=) OR a live admin session. On a token hit,
-        record a best-effort in-memory last-used stamp (no disk write, so scrapes stay cheap)."""
+        """A valid API token (read-only or management; header or monitoring-only ?token=) OR a live admin session.
+        On a token hit, record a best-effort in-memory last-used stamp (no disk write, so scrapes stay cheap)."""
         tok = self._ext_token(u)
         if tok and api_token_lookup(self.deps, tok) is not None:
-            self.deps.setdefault("api_seen", {})[_api_token_hash(tok.strip())] = int(time.time())
+            self._mark_api_used(tok)
             return True
         return self._authed_user() is not None
 
@@ -33745,7 +33767,7 @@ class Handler(BaseHTTPRequestHandler):
                 if _d:
                     time.sleep(_d)
                 return self._send(401, {"error": "unauthorized",
-                                        "detail": "send a read-only API token as 'Authorization: Bearer <token>' "
+                                        "detail": "send an API token as 'Authorization: Bearer <token>' "
                                                   "(mint one in Settings → Integrations, then enable the API)"})
             if path == "/metrics":
                 return self._send_text(200, ext_metrics(self.deps), "text/plain; version=0.0.4; charset=utf-8")
@@ -33938,6 +33960,29 @@ class Handler(BaseHTTPRequestHandler):
         # 401 JSON, deliberately WITHOUT WWW-Authenticate so the browser shows our login
         # page instead of its native Basic-auth popup.
         self._send(401, {"ok": False, "error": "authentication required", "code": "unauthorized"})
+        return False
+
+    def _require_operator_auth(self):
+        """Admin session/Basic auth OR a Settings → Integrations token with scope=manage.
+
+        The management token authenticates the existing operator API rather than a parallel dispatcher, so every
+        mutation keeps the same validation, _api_lock discipline, event log, cache invalidation and node side-effects.
+        Header-only is intentional: a full-access secret must not land in proxy/browser access logs via ?token=.
+        """
+        if self._authed_user() is not None:
+            return True
+        tok = self._api_header_token()
+        if tok:
+            rec = api_token_lookup(self.deps, tok)
+            if rec is not None:
+                if api_token_scope(rec) == "manage":
+                    self._mark_api_used(tok)
+                    return True
+                self._send(403, {"ok": False, "error": "this API token is read-only; create a Full management token in Settings → Integrations",
+                                 "code": "read_only_token"})
+                return False
+        self._send(401, {"ok": False, "error": "authentication required; use an admin session/Basic auth or a Full management API token",
+                         "code": "unauthorized"})
         return False
 
     def _session_cookie(self, value, max_age):
@@ -36590,7 +36635,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._node_turn_binary(u)
         if path == "/healthz" or path == "/metrics" or path.startswith("/api/v1/"):
             return self._ext_api(path, u)  # external integration API — its OWN token/session auth (read-only)
-        if not self._require_auth():       # everything else (data) needs a session
+        if not self._require_operator_auth():   # browser/Basic admin OR a full-management API token
             return
         if path.startswith("/wgstats/"):
             return self._wgstats(path)
@@ -36702,7 +36747,7 @@ class Handler(BaseHTTPRequestHandler):
                 tok = make_session(creds[0], self.deps.get("session_secret"))
                 return self._send_with_cookie(code, obj, self._session_cookie(tok, SESSION_TTL))
             return self._send(code, obj)
-        if not self._require_auth():
+        if not self._require_operator_auth():
             return
         if path is None or not path.startswith("/api/"):
             return self.send_error(404)

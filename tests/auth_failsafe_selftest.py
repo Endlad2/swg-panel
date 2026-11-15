@@ -188,7 +188,7 @@ get = src.split("def do_GET", 1)[1].split("def do_POST", 1)[0]
 i_static = get.find("static_rel(path) is not None")
 i_node = get.find('path == "/api/node/whoami"')
 i_ext = get.find('path == "/healthz" or path == "/metrics"')
-i_gate = get.find("if not self._require_auth()")
+i_gate = get.find("if not self._require_operator_auth()")
 check("[6] SPA assets are served before the gate, so the login page can load",
       0 <= i_static < i_gate, (i_static, i_gate))
 check("[6] node-token paths are served before the gate, so the fleet keeps syncing",

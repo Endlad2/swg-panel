@@ -432,24 +432,24 @@ A node can serve several interfaces — list them all under `interfaces`; each p
 
 ## External API & Integrations
 
-A **read-only** REST + Prometheus surface plus outbound **webhooks**, for wiring the panel into external monitoring and automation — Grafana, Uptime Kuma, Prometheus, Terraform/Ansible, or your own scripts. It exposes state the panel already collects from node syncs; it **never changes the fleet**.
+Settings → Integrations exposes a **read-only** REST + Prometheus monitoring surface plus outbound **webhooks**, and can also mint a separate **Full management** token. A management token authenticates the same operator `/api/*` routes used by the SPA, so automation can create/update users, peers, nodes, subscriptions and settings without a second mutation implementation.
 
-- **Read-only.** No token is accepted on any mutating endpoint — a leaked token can observe, never modify.
+- **Scoped tokens.** Read-only tokens remain unable to mutate anything; Full management tokens are administrator-equivalent for the operator API. Tokens minted before scopes existed remain read-only.
 - **It follows the panel, not the fleet.** If you turn on private panel access (**Settings → Panel access**), `/api/v1/*` and `/metrics` move onto the tunnelled address with it — the address your nodes dial then answers node routes only and 404s both. Point your scrapers through the tunnel, not at the fleet address.
 - **Panel-only.** Nodes are untouched; they sync exactly as before. The API is served from the same in-memory snapshots + roster the panel already keeps — no extra load on nodes, no change to the sync loop.
 - **Cheap.** Off the SPA's poll path; the whole-fleet view is cached ~3s and shared by every endpoint and scrape, so an aggressive Prometheus/Grafana setup can't degrade the panel.
 
 Enable it in **Settings → Integrations**: mint a token (shown once), optionally add webhooks.
 
-**Authentication.** Every endpoint except the liveness probes needs a token, sent one of three ways:
+**Authentication.** Read-only monitoring accepts either header below and, for legacy tools, `?token=`. Full management is **header-only** so an administrator-equivalent secret does not land in URLs/access logs:
 
 | where | how to send it | when to use it |
 |---|---|---|
 | header | `Authorization: Bearer <token>` | the default |
 | header | `X-API-Key: <token>` | tools that reserve `Authorization` for their own auth |
-| query | `?token=<token>` | tools that cannot set a header at all |
+| query | `?token=<token>` | read-only monitoring only; legacy tools that cannot set a header |
 
-Tokens are minted in the UI (`swgp_…`); only a SHA-256 hash is stored. An admin session cookie also authenticates (so the settings page can preview). Turning the API **off** rejects all tokens immediately. `GET /healthz` and `GET /api/v1/health` are unauthenticated liveness probes and expose no secrets.
+Tokens are minted in the UI (`swgp_…`); only a SHA-256 hash + scope is stored. An admin session cookie also authenticates (so the settings page can preview). Turning the API **off** rejects all tokens immediately. `GET /healthz` and `GET /api/v1/health` are unauthenticated liveness probes and expose no secrets.
 
 **Endpoints:**
 
@@ -528,7 +528,7 @@ scrape_configs:
       - targets: ['panel.example.com']
 ```
 
-Uptime Kuma: add an **HTTP(s) - Keyword** monitor on `/api/v1/health`, keyword `"ok"`. Terraform/Ansible: read `/api/v1/servers` and `/api/v1/peers` to discover fleet state for inventory or drift checks (the API is read-only — provision through the panel UI/roster).
+Uptime Kuma: add an **HTTP(s) - Keyword** monitor on `/api/v1/health`, keyword `"ok"`. Terraform/Ansible: use a read-only token for inventory/drift checks, or a Full management token to provision through the same operator API as the panel UI.
 
 Full reference, with a response body for every endpoint: **[API.md](API.md)**.
 
@@ -540,7 +540,7 @@ Full reference, with a response body for every endpoint: **[API.md](API.md)**.
 - **Node tokens** authenticate a node to the panel. They are shown once, stored only as a hash, and can be rotated. Treat the node's `config.json` (which holds the live token) as a secret — it is mode `600`.
 - **PSKs** are generated per peer and stored in the roster so every node stays consistent; keep `/var/lib/swg-panel` readable only by the panel user.
 - **Private keys** are generated in your browser and never sent to the panel in the clear. By default (`store_configs: encrypted`) the panel keeps each config as a blob your browser sealed with **your** encryption key, so QR/download stay available while the server cannot read the key; set `store_configs: off` for nothing at rest, and each private key is shown only once at creation. Either way, if a peer's key is lost, re-issue the peer.
-- **API tokens** are read-only and hashed at rest (SHA-256); a leaked token can observe fleet state but never modify it, and disabling the API in **Settings → Integrations** revokes every token immediately.
+- **API tokens** are scoped and hashed at rest (SHA-256). Read-only tokens cannot mutate; **Full management** tokens are administrator-equivalent for `/api/*`, so protect them like the panel password. Disabling the API in **Settings → Integrations** revokes every token immediately.
 - **What a bare-metal panel can read on its own host:** its live log viewer reads swg's journal, so the panel's service runs in the `systemd-journal` group — and that group reads every journal on the host, not only swg's. A panel taken over could read the host's other services' lines too (it already steers every node it manages).
 - **A password given on the command line is logged:** sudo logs the command it runs, so an unattended install given the panel password (`-pass`, `BASIC_PASS=`) leaves it in plaintext in that host's `auth.log` and journal — readable by root, `adm` and `systemd-journal` (the panel's process included, above) — in the `bash -c "$(curl …)"` form and the piped one alike. Let the installer ask for it, or change it under **Settings → Authentication** afterwards.
 - **A WDTT or csqtt server's owner password** is on the server's command line: `ps` shows it to every local account on that server.
